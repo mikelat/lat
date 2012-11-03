@@ -1,8 +1,5 @@
 <?php namespace Lat;
 
-// Grab the configuration file
-require(ROOT . 'cfg' . EXT);
-
 // Load configuration libary and import what we have
 require $cfg['path']['library'] . 'config' . EXT;
 Config::import($cfg);

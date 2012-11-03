@@ -25,10 +25,6 @@ $cfg['path'] = array(
 	,	'view' => SYS . 'view/'
 );
 
-
-
-
-
 // Define enviroments
 $enviroment = array(
 	// Development servers
@@ -59,6 +55,13 @@ unset($enviroment, $current_enviroment); // cleanup enviroment vars
 if(ENVIROMENT == "development") {
 	error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 	ini_set('display_errors', 'On');
+
+	// Grab configruation outside of git :)
+	require(ROOT . '../cfg' . EXT);
+}
+else {
+	// Grab our root configuration file
+	require(ROOT . 'cfg' . EXT);
 }
 
 // Load lat core
