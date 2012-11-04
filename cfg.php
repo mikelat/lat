@@ -1,5 +1,5 @@
 <?php
-$cfg['sql'] = array(
+$sql_cfg = array(
 		'host'     => "localhost" // sql server host
 	,	'database' => "lat" // database name
 	,	'username' => "root" // username for login

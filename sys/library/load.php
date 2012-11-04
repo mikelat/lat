@@ -1,36 +1,28 @@
-<?php namespace Lat;
-
+<?php
 class Load {
 
 	public static function library($file) {
-		require Config::get('path', 'library') . strtolower($file) . EXT;
+		require Config::get('path-library') . strtolower($file) . EXT;
+		Log::info("Loaded {$file} library.");
 	}
 
 	public static function model($file) {
-		require Config::get('path', 'model') . strtolower($file) . EXT;
+		require Config::get('path-model') . strtolower($file) . EXT;
+		Log::info("Loaded {$file} model.");
 	}
 
-	public static function view($file, $data=array(), $return=false) {
-		require Config::get('path', 'view') . strtolower($file) . EXT;
+	public static function view($view_file, $view_data=null, $view_return=false) {
+		ob_start();
+		if(is_array($view_data)) {
+			extract($view_data, EXTR_SKIP);
+		}
+		require Config::get('path-view') . strtolower($view_file) . EXT;
+		$out = ob_get_contents();
+		ob_end_clean();
 
-	    $callback = function($matches) use ($data) {
-	    	switch($matches[1]) {
-	    		case 'cfg':
-	    			if($matches[2][0] !== 'sql') {
-						Config::get($matches[2]);
-	    			}
-	    			break;
-	    		case 'var':
-					if(isset($data[$matches[2]])) {
-						return $data[$matches[2]];
-					}
-	    			break;
-	    	}
-	    };
+		Log::info("Loaded {$view_file} view.");
 
-		$out = preg_replace_callback("/<!-- (var|cfg):([A-Za-z0-9_-]+) -->/", $callback, $out);
-
-		if($return) {
+		if($view_return) {
 			return $out;
 		}
 		else {

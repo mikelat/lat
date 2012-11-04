@@ -1,5 +1,4 @@
-<?php namespace Lat;
-
+<?php
 class DB extends Driver {
 
 	// Array for query builder

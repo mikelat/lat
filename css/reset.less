@@ -60,5 +60,17 @@ article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{di
 .min{width:1%;}
 .max{width:100%;}
 
-#debug { z-index: 9001; position: fixed; bottom: 0; left: 0; padding: 3px; font-size: 10px; }
-#debug_data { display: none; position: fixed; background: white; left: 0; top: 0; font-size: 14px; width: 100%; height: 100%; }
+#debug{z-index:9000;position:fixed;bottom:14px;left:0;padding:5px;font-size:12px;line-height:15px;}
+#debug_link{z-index:9002;position:fixed;bottom:0;left:0;padding:5px;font-size:12px;line-height:15px;}
+#debug_data{z-index:9001;top:0;left:0;overflow:auto;display:none;position:fixed;background:#FFF;font-size:14px;width:100%;height:100%;afloat:right;font-size:20px;color:red;margin:0 10px;
+	.debug-info{display:none;}
+	.debug-info.on{display:block;}
+	a.debug-info{color:green;display:block;}
+	#debug_head{font-weight:700;float:left;font-size:20px;margin:10px 0;}
+	li{clear:both;padding:0 20px;}
+	em{color:#aaa;}
+	.debug-query strong{color:blue;}
+	.debug-error strong{color:red;}
+	.debug-info strong{color:green;}
+	.debug-debug strong{color:orange;}
+}

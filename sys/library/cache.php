@@ -1,4 +1,4 @@
-<?php namespace Lat;
+<?php
 
 class Cache {
 

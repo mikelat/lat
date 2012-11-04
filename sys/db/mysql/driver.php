@@ -1,14 +1,14 @@
-<?php namespace Lat;
-
+<?php
 class Driver {
 
 	private static $connection = null;
+	protected static $cfg = array();
 
 	/**
 	 * Execute a database query
 	 */
 	public static function query($query, $data=null) {
-		$q = self::connect()->prepare($query);
+		$q = self::$connection->prepare($query);
 
 		$timer = microtime(true);
 		$q->execute($data);
@@ -18,16 +18,22 @@ class Driver {
 	}
 
 	/**
+	 * Return the database prefix
+	 */
+	public static function prefix($table) {
+		return self::$cfg['prefix'] . $table;
+	}
+
+	/**
 	 * Return the connection object, connect if necessary
 	 */
-	private static function connect() {
-		// create a new connection
-		if(self::$connection === null) {
-			$connection_string = "mysql:host=" . Config::get('sql', 'host') . ";dbname=" . Config::get('sql', 'database');
-			self::$connection = new \PDO($connection_string, Config::get('sql', 'username'), Config::get('sql', 'password'));
-		}
+	public static function load($sql_cfg) {
 
-		return self::$connection;
+		self::$cfg = $sql_cfg;
+
+		// create a new connection
+		$connection_string = "mysql:host=" . self::$cfg['host'] . ";dbname=" . self::$cfg['database'];
+		self::$connection = new \PDO($connection_string, self::$cfg['username'], self::$cfg['password']);
 	}
 
 	/**
@@ -40,7 +46,10 @@ class Driver {
 
 		switch($sql['type']) {
 			case 'select':
-				$query = "SELECT " . self::parse_column($sql['select']) . " FROM ";
+				if(is_array($sql['select'])) {
+					$sql['select'] = implode(", ", $sql['select']);
+				}
+				$query = "SELECT " . $sql['select'] . " FROM ";
 				break;
 			case 'update':
 				$query = "UPDATE ";
@@ -50,12 +59,12 @@ class Driver {
 				break;
 		}
 
-		$query .= Config::get('sql', 'prefix') . $sql['table'];
+		$query .= self::prefix($sql['table']);
 
 		// SET
 		if(isset($sql['set'])) {
 			foreach($sql['set'] as $name => $value) {
-				$set[] = self::parse_column($name) . "=:v".count($data);
+				$set[] = $name . "=:v".count($data);
 				$data[":v".count($data)] = $value;
 			}
 			$query .= " SET " . implode(", ", $set);
@@ -68,12 +77,18 @@ class Driver {
 
 		// GROUP BY
 		if(isset($sql['group'])) {
-			$query .= " GROUP BY " . self::parse_column($sql['group']);
+			if(is_array($sql['group'])) {
+				$sql['group'] = implode(", ", $sql['group']);
+			}
+			$query .= " GROUP BY " . $sql['group'];
 		}
 
 		// ORDER BY
 		if(isset($sql['order'])) {
-			$query .= " ORDER BY " . self::parse_column($sql['order']);
+			if(is_array($sql['order'])) {
+				$sql['order'] = implode(", ", $sql['order']);
+			}
+			$query .= " ORDER BY " . $sql['order'];
 		}
 
 		// LIMIT
@@ -178,15 +193,6 @@ class Driver {
 	/**
 	 * Executes built database query and returns an object
 	 */
-	private function parse_column($args) {
-		if(is_array($args)) {
-			echo 'tes';
-			return implode(", ", array_map($args, "self::parse_column"));
-		}
-		else {
-			return trim(preg_replace("/[^a-zA-Z_.()*, ]/", "", $args));
-		}
-	}
 
 	private function parse_where($where, &$data, $brackets = false) {
 		$where_string = "";
@@ -206,7 +212,7 @@ class Driver {
 					}
 				}
 
-				$where_string .= self::parse_column($n);
+				$where_string .= $n;
 
 				// symbols everywhere
 				if(substr($n, "-1", "1") == ">") {

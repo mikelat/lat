@@ -18,11 +18,11 @@ define("SYS", ROOT . "sys/");
 define("DAT", ROOT . "dat/");
 
 // Define paths
-$cfg['path'] = array(
-		'controller' => SYS . 'controller/'
-	,	'library' => SYS . 'library/'
-	,	'db' => SYS . 'db/'
-	,	'view' => SYS . 'view/'
+$cfg = array(
+		'path-controller' => SYS . 'controller/'
+	,	'path-library' => SYS . 'library/'
+	,	'path-db' => SYS . 'db/'
+	,	'path-view' => SYS . 'view/'
 );
 
 // Define enviroments
@@ -48,11 +48,11 @@ foreach($enviroment as $env => $host) {
 }
 
 // Set enviroment
-define('ENVIROMENT', $current_enviroment);
+define('ENVIRONMENT', $current_enviroment);
 unset($enviroment, $current_enviroment); // cleanup enviroment vars
 
 // Show errors if we're development
-if(ENVIROMENT == "development") {
+if(ENVIRONMENT == "development") {
 	error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 	ini_set('display_errors', 'On');
 

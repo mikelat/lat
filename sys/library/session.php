@@ -1,10 +1,9 @@
-<?php namespace Lat;
-
+<?php
 class Session {
 
 	public static function load() {
 		$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
-		$session_id = preg_replace("/[^0-9A-F.]/", "", strtoupper(Cookie::get("sid")));
+		$session_id = preg_replace("/[^0-9A-F.]/", "", strtoupper(Input::cookie("sid")));
 
 
 
