@@ -6,6 +6,7 @@ class Account extends Controller {
 	}
 
 	public static function signup() {
-		echo "this is the sign up page";
+		Load::library('form');
+		Load::view('account/signup');
 	}
 }

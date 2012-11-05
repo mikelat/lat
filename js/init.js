@@ -1,11 +1,8 @@
-var loading_r = 0;
-var js = { loaded: 0, count: 0, code: [] };
-var obj = { };
+var js = { loaded: 0, count: 0, code: [], html: null };
 
 $().ready(function(){
 	init();
 	$("header form input:visible:first").focus();
-	obj.loading = $("#loading");
 
 	// delay popstate so it doesn't fire immediately
 	window.setTimeout(function() {
@@ -13,68 +10,46 @@ $().ready(function(){
 			get_page(location.pathname);
 		});
 	}, 200);
-
-	$("#search, #login").submit(submit_header);
-
 });
-
-function submit_header() {
-
-	$('header').data('state', 1);
-
-	$('header form').each(function() {
-		var form = $(this);
-		$('input:eq(0)', form).animate({ width: 'toggle' }, 100, function() {
-			$('div', form).animate({ width: 'toggle' }, 100);
-			$('input:eq(1)', form).animate({ width: 'toggle' }, 100, function() {
-				form.toggleClass('close');
-			});
-		});
-	});
-
-	return false;
-
-}
 
 function ajax_loading(act) {
 	// Toggle
-	if(typeof act == undefined) {
-		if(obj.loading.is(':visible')) {
+	if(typeof act == 'undefined') {
+		if($('#loading').is(':visible')) {
 			act = 'hide';
 		} else {
 			act = 'show';
 		}
 	}
-
+	
 	// Close
 	if(act == 'hide') {
-		obj.loading.fadeOut('fast', function(){
-			clearInterval($("#loading").data('interval'));
+		$('#loading').fadeOut('fast', function(){
+			clearInterval($('#loading').data('interval'));
+			$('#loading').remove();
 		});
 	}
 	// Open
 	else if (act == 'show') {
-		obj.loading.data('interval', setInterval(function(){
+		$('#content').after('<div id="loading"></div>');
+		var obj_load = $('#loading');
+		var loading_r = 0;
+		obj_load.data('interval', setInterval(function(){
 			loading_r = (loading_r + 1) % 360;
-			obj.loading.css({ WebkitTransform: 'rotate(' + loading_r + 'deg)', '-moz-transform': 'rotate(' + loading_r + 'deg)'});
-		}, 5));
-		obj.loading.fadeIn('fast');
+			obj_load.css({ WebkitTransform: 'rotate(' + loading_r + 'deg)', '-moz-transform': 'rotate(' + loading_r + 'deg)'});
+		}, 5)).fadeIn('fast');
+
 	}
 }
 
 function init(context) {
-	if(typeof context == undefined) context = null;
+	if(typeof context == 'undefined') context = null;
 
 	if(js['count'] != js['loaded']) {
 		return false;
 	}
 
-	if($('#content').is(':hidden')) {
-		ajax_loading('hide');
-		$('#content').fadeIn('fast');
-	}
-
-	$('a[rel!=internal][href^="'+base_url+'"]', context).on('click', function(){
+	$('a[rel!=external][href^="'+lat.url+'"]', context).on('click', function(){
 		if (typeof window.history.pushState == 'function') {
 			get_page($(this).attr('href'));
 			history.pushState({}, document.title, $(this).attr('href'));
@@ -104,7 +79,7 @@ function init(context) {
 function get_page(url) {
 
 	$('#content *').off();
-	$('#content').fadeOut('fast').data('hidden', 1);
+	$('#content').fadeOut('fast', function() { $('#content').data('hidden', 1); load_page(); }).data('hidden', 0);;
 	ajax_loading('show');
 
 	$.ajax({
@@ -117,17 +92,25 @@ function get_page(url) {
 }
 
 function load_page(data) {
-	if($('#content').data('hidden') != 1) {
-		$('#content').data('hidden', 1).fadeOut('fast', function(){
-			load_page(data);
-		});
-		return;
+	
+	if(js['html'] !== null) {
+		console.log('grabbing data');
+		data = js['html'];
+		js['html'] = null;
 	}
 
-	lat = data['js_vars'];
+	if(typeof data == 'undefined') {
+		return;
+	}
+	
+	if($('#content').data('hidden') != 1) {
+		js['html'] = data; 
+		return;
+	}
+	
+	lat['js_vars'] = data['js_vars'];
 
 	if(data.js_files) {
-
 		js['count'] = data['js_files'].length;
 		js['loaded'] = 0;
 		js['code'] = data['js_code'];
@@ -146,73 +129,17 @@ function load_page(data) {
 			});
 		});
 	} else {
-
 		js['count'] = 0;
 		js['loaded'] = 0;
 		js['code'] = data['js_code'];
-
 	}
 
 	if(data['url']) {
 		history.pushState({}, document.title, data['url']);
 	}
 
-	$('#content').html(data.output).data('hidden', 0);
+	$('#content').html(data['content']).data('hidden', 0).fadeIn('fast');
+	
+	ajax_loading('hide');
 	init('#content');
-}
-
-function toggle_fade(arg) {
-	if(arg.length != 2) {
-		return false;
-	}
-
-	if($(arg[1]).is(':visible'))
-	{
-		arg.reverse();
-	}
-
-	$(arg[0]).fadeOut('fast', function(){
-		$(arg[1]).fadeIn('fast');
-	});
-
-	return false;
-}
-
-function popup_close() {
-	$('#popup, #overlay').fadeOut('fast', function() { $(this).remove(); });
-}
-
-function popup(arg) {
-
-	var b, c = 0;
-	if(!arg.button) {
-		arg.button = { 'Close': function() { popup_close() } }
-	}
-
-	var popup = '<div id="popup"><h2>'+ arg.title +'</h2><section>';
-
-	if(arg.icon) {
-		popup += '<span class="icon '+ arg.icon +'"></span>';
-	}
-
-	popup += '<p>'+ arg.content +'</p><footer>';
-
-	for (b in arg.button)
-	{
-		popup += '<button>'+ b +'</button>';
-	}
-
-	popup += '</footer></section></div><div id="overlay"></div>';
-
-	$('#content').append(popup);
-
-	for (b in arg.button)
-	{
-		$('#popup:eq('+ c +')').on('click', arg.button[b])
-	}
-
-	$('#popup').css('top', (($(window).height() - $('#popup').outerHeight()) / 2) + $(window).scrollTop() + "px");
-	$('#popup, #overlay').fadeIn('fast');
-
-	//i am popup</h2><section><footer><button>close</button></footer>
 }

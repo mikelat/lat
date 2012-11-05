@@ -3,7 +3,7 @@ class Session {
 
 	public static function load() {
 		$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
-		$session_id = preg_replace("/[^0-9A-F.]/", "", strtoupper(Input::cookie("sid")));
+		$session_id = preg_replace("/[^0-9A-F.]/", "", strtoupper(self::cookie("sid")));
 
 
 
@@ -174,5 +174,35 @@ class Session {
 		// Throw in group permissions in here
 		$this->lat->user['group'] = $this->lat->cache['group'][$this->lat->user['gid']];
 		*/
+	}
+
+	/**
+	 * Returns or sets a cookie
+	 */
+	public static function cookie($name, $content=null, $expires=null) {
+
+		// Erase Cookie
+		if($content === "") {
+			setcookie($name, "");
+			return;
+		}
+		// Set cookie
+		elseif($content !== null) {
+			if($expires === null) {
+				$expires = time() + 31536000;
+			}
+
+			setcookie($name, $content, $expire, "/");
+			Log::info('Set cookie "' . $name . '" with value: "' . $value . '"');
+			return $content;
+		}
+
+		// Return Cookie
+		if(isset($_COOKIE[$name])) {
+			return $_COOKIE[$name];
+		}
+		else {
+			return null;
+		}
 	}
 }

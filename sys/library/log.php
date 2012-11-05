@@ -3,9 +3,11 @@ class Log {
 
 	private static $log = array();
 	public static $query_time = 0;
+	public static $query_total = 0;
 
 	public static function query($query, $time=0) {
 		self::$query_time += $time;
+		self::$query_total ++;
 		self::$log[] = array('query', $query, $time);
 	}
 

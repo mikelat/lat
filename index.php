@@ -19,10 +19,10 @@ define("DAT", ROOT . "dat/");
 
 // Define paths
 $cfg = array(
-		'path-controller' => SYS . 'controller/'
-	,	'path-library' => SYS . 'library/'
-	,	'path-db' => SYS . 'db/'
-	,	'path-view' => SYS . 'view/'
+		'path_controller' => SYS . 'controller/'
+	,	'path_library' => SYS . 'library/'
+	,	'path_db' => SYS . 'db/'
+	,	'path_view' => SYS . 'view/'
 );
 
 // Define enviroments

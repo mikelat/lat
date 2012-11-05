@@ -21,6 +21,9 @@ class Url {
 		return null;
 	}
 
+	/**
+	 * Set internal URL segments
+	 */
 	public static function set($url) {
 		self::$segments = explode("/", $url);
 	}
@@ -28,13 +31,15 @@ class Url {
 	/**
 	 * Make a URL
 	 */
-	public static function make($url="") {
-		if(substr($url, -1, 1) !== "/") {
-			$url .= "/";
-		}
+	public static function make($url="", $is_file=false) {
+		if($is_file === false) {
+			if(substr($url, -1, 1) !== "/") {
+				$url .= "/";
+			}
 
-		if($url === "/") {
-			$url = "";
+			if($url === "/") {
+				$url = "";
+			}
 		}
 
 		return Config::get('url') . $url;

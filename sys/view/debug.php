@@ -59,25 +59,28 @@ class Highlighter {
 	}
 }
 ?>
+
 <div id="debug">
 	<b>Coded By:</b> Michael Lat<br />
 	<b>Version:</b> <?php echo $version; ?><br />
 	<b>Queries Executed:</b> <?php echo $queries; ?><br />
 	<b>Query Time:</b> <?php echo $query_time; ?><br />
 	<b>Exec Time:</b> <?php echo $exec_time; ?>
+
 </div>
 <div id="debug_link">
 	<a href="#" onclick="$('#debug_data').toggle(); return false;">debug</a> :: <a href="<?php echo Url::make('forum/cache') ?>">cache</a>
 </div>
 <ul id="debug_data">
 	<li id="debug_head">
-		Debug Dump
-		<a href="#" onclick="$('#debug_data').toggle(); return false;">close debug popup</a>
-		<a href="#" onclick="$('.debug-info').toggleClass('on'); return false;" class="debug-info">toggle info</a>
+		Debug Summary
+		<a href="#" onclick="$('#debug_data').toggle(); return false;">close debug summary</a>
+		<a href="#" onclick="$('.debug-debug').toggleClass('on'); return false;" class="debug-debug">toggle debug info</a>
 	</li>
-<?php foreach ($log as $l) {
-	echo '<li class="debug-' . $l[0] . '"><strong>[' . strtoupper($l[0]) . ']</strong> '
- 	.	($l[0] == 'query' ? Highlighter::sql($l[1]) : $l[1])
-	.	($l[2] > 0 ? ' <em>(executed in '.number_format($l[2], 6). 's)</em></li>' : '</li>');
-} ?>
+	<?php foreach ($log as $l) {
+		echo '<li class="debug-' . $l[0] . '"><strong>[' . strtoupper($l[0]) . ']</strong> '
+	 	.	($l[0] == 'query' ? Highlighter::sql($l[1]) : $l[1])
+		.	($l[2] > 0 ? ' <em>(executed in '.number_format($l[2], 6). 's)</em></li>' : '</li>');
+	} ?>
+
 </ul>
