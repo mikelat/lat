@@ -1,9 +1,8 @@
-var js = { loaded: 0, count: 0, code: [], html: null };
+var js = { loaded: 0, count: 0, code: [], data_buffer: null };
 
 $().ready(function(){
 	init();
-	$("header form input:visible:first").focus();
-
+	
 	// delay popstate so it doesn't fire immediately
 	window.setTimeout(function() {
 		$(window).bind('popstate', function(){
@@ -12,43 +11,19 @@ $().ready(function(){
 	}, 200);
 });
 
-function ajax_loading(act) {
-	// Toggle
-	if(typeof act == 'undefined') {
-		if($('#loading').is(':visible')) {
-			act = 'hide';
-		} else {
-			act = 'show';
-		}
-	}
-	
-	// Close
-	if(act == 'hide') {
-		$('#loading').fadeOut('fast', function(){
-			clearInterval($('#loading').data('interval'));
-			$('#loading').remove();
-		});
-	}
-	// Open
-	else if (act == 'show') {
-		$('#content').after('<div id="loading"></div>');
-		var obj_load = $('#loading');
-		var loading_r = 0;
-		obj_load.data('interval', setInterval(function(){
-			loading_r = (loading_r + 1) % 360;
-			obj_load.css({ WebkitTransform: 'rotate(' + loading_r + 'deg)', '-moz-transform': 'rotate(' + loading_r + 'deg)'});
-		}, 5)).fadeIn('fast');
-
-	}
-}
-
+/**
+ * Initalizes loaded page
+ * 
+ * @param context
+ * @returns {Boolean}
+ */
 function init(context) {
 	if(typeof context == 'undefined') context = null;
 
 	if(js['count'] != js['loaded']) {
 		return false;
 	}
-
+	
 	$('a[rel!=external][href^="'+lat.url+'"]', context).on('click', function(){
 		if (typeof window.history.pushState == 'function') {
 			get_page($(this).attr('href'));
@@ -65,57 +40,89 @@ function init(context) {
 		});
 	});
 
-	if(js['code']) {
-		$.each(js['code'], function(i, j) {
-			eval(j);
-		});
-
-		js['code'] = [];
-	}
-
 	return true;
 }
 
-function get_page(url) {
+/**
+ * Controls the ajax indicator
+ * 
+ * @param act
+ */
+function ajax_loading(act) {
+	// Toggle
+	if(typeof act == 'undefined') {
+		if($('#loading').is(':visible')) {
+			act = 'hide';
+		} else {
+			act = 'show';
+		}
+	}
+	console.log(act)
+	
+	// Remove the indicator
+	if(act == 'hide') {
+		clearInterval($('#loading').data('interval'));
+		$('#loading').remove();
+		console.log('test')
+	}
+	// Show the indicator
+	else if (act == 'show') {
+		$('#content').after('<div id="loading"></div>');
+		var obj_load = $('#loading');
+		var loading_r = 0;
+		// interval for spinning the indicator
+		obj_load.data('interval', setInterval(function(){
+			loading_r = (loading_r + 1) % 360;
+			obj_load.css({ WebkitTransform: 'rotate(' + loading_r + 'deg)', '-moz-transform': 'rotate(' + loading_r + 'deg)'});
+		}, 5));
 
-	$('#content *').off();
-	$('#content').fadeOut('fast', function() { $('#content').data('hidden', 1); load_page(); }).data('hidden', 0);;
-	ajax_loading('show');
-
-	$.ajax({
-		type: 'POST',
-		url: url,
-		data: { json: 1 },
-		success: load_page,
-		dataType: 'json'
-	});
+	}
 }
 
-function load_page(data) {
-	
-	if(js['html'] !== null) {
-		console.log('grabbing data');
-		data = js['html'];
-		js['html'] = null;
+/**
+ * Loads a new page by ajax
+ * 
+ * @param url
+ */
+function get_page(url) {
+	if (typeof window.history.pushState == 'function') {
+		$('#content *').off();
+		$("#content").css({ opacity: 0.5 });
+		ajax_loading('show');
+		$.ajax({
+			type: 'POST',
+			url: url,
+			cache: false,
+			data: { json: 1 },
+			success: load_page,
+			error: function(jqXHR, textStatus, errorThrown) {
+				$('html').html(jqXHR.responseText);
+				console.log(jqXHR);
+			},
+			dataType: 'json'
+		});
 	}
+	else {
+		window.location = url;
+	}
+}
 
-	if(typeof data == 'undefined') {
-		return;
-	}
-	
-	if($('#content').data('hidden') != 1) {
-		js['html'] = data; 
-		return;
-	}
-	
-	lat['js_vars'] = data['js_vars'];
+/**
+ * Load page contents from ajax response onto the page
+ * 
+ * @param data
+ */
+function load_page(data) {
+
+	// refresh variable array
+	lat = data['jsv'];
 
 	if(data.js_files) {
-		js['count'] = data['js_files'].length;
+		js['count'] = data['jsf'].length;
 		js['loaded'] = 0;
-		js['code'] = data['js_code'];
 
-		$.each(data['js_files'], function(i, v) {
+		// loads the new javascript files
+		$.each(data['jsf'], function(i, v) {
 			$.ajax({
 				url: v,
 				dataType: "script",
@@ -131,15 +138,18 @@ function load_page(data) {
 	} else {
 		js['count'] = 0;
 		js['loaded'] = 0;
-		js['code'] = data['js_code'];
 	}
 
+	// if a new url was provided (possible redirect?) then use that instead
 	if(data['url']) {
-		history.pushState({}, document.title, data['url']);
+		history.replaceState({}, document.title, data['url']);
 	}
 
-	$('#content').html(data['content']).data('hidden', 0).fadeIn('fast');
-	
+	// load content onto the page
+	$('html').attr('class', data['classes']);
+	$('#content').html(data['content']);//.data('hidden', 0).fadeIn('fast');
+	$("#content").css({ opacity: 1 });
+	// finish up and initalize the page
 	ajax_loading('hide');
 	init('#content');
 }

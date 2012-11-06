@@ -1,23 +1,36 @@
 <h2>Sign up</h2>
 <section>
-	<form id="signup" method="post" action="<?php echo Url::make('account/signup') ?>">
+	<?php echo Form::open_form('signup') ?>
+
 		<ul>
-			<li>
-				<label class="required">Email Address</label>
-				<input <?php //echo Form::input(array('type' => 'email', 'name' => 'email', 'validate' => array('required'))); ?> />
-			</li>
-			<li>
-				<label class="required">Name</label>
-				<input type="text" id="name" name="name" <?php //echo Form::validate(array('required', 'ajax')); ?> />
-			</li>
-			<li>
-				<label class="required">Password</label>
-				<input type="password" id="password" name="password" <?php //echo Form::validate(array('required', 'match:password')); ?> />
-			</li>
-			<li>
-				<label class="required">Confirm Password</label>
-				<input type="password" id="confirm_password" name="confirm_password" <?php // echo Form::validate(array('required', 'match:password')); ?> />
-			</li>
+			<?php echo Form::input(array(
+						'label' => 'Email Address'
+					,	'type' => 'email'
+					,	'name' => 'email_address'
+					,	'validate' => array('minlength:1', 'regex:email')
+					,	'autofocus' => 'autofocus'
+				)); ?>
+
+			<?php echo Form::input(array(
+						'label' => 'Display Name'
+					,	'name' => 'display_name'
+					,	'validate' => array('minlength:2', 'ajax')
+				)); ?>
+
+			<?php echo Form::input(array(
+						'label' => 'Password'
+					,	'type' => 'password'
+					,	'name' => 'password'
+					,	'validate' => array('minlength:6')
+				)); ?>
+
+			<?php echo Form::input(array(
+						'label' => 'Confirm Password'
+					,	'type' => 'password'
+					,	'name' => 'confirm_password'
+					,	'validate' => array('minlength:6', 'match:password')
+				)); ?>
+
 			<li>
 				<label class="required">Captcha</label>
 				Coming soon
@@ -26,5 +39,6 @@
 		<footer>
 			<button type="submit">Register</button>
 		</footer>
-	</form>
+	<?php echo Form::close_form(); ?>
+
 </section>

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="<?php echo $classes ?>">
 <head>
 	<title>Lat CMS</title>
 	<meta charset="utf-8">
@@ -47,12 +47,12 @@
 <section id="content">
 <?php echo $html; ?>
 </section>
-<script>var lat = <?php echo json_encode(Output::js()) ?></script>
+<script>var lat = <?php echo json_encode(Load::javascript_var()) ?></script>
 <script src="<?php echo Url::make('js/jquery.js', true) ?>"></script>
 <script src="<?php echo Url::make('js/init.js', true) ?>"></script>
 <script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
 <?php
-	foreach(Output::js_file() as $jf) {
+	foreach(Load::javascript_file() as $jf) {
 		echo '<script src="' . $jf . '"></script>';
 	}
 ?>

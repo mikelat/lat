@@ -42,8 +42,9 @@ class Log {
 
 		$html = <<<HTML
 <!doctype html>
-<html lang="en" style="font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+<html lang="en">
 <title>Kernel Error</title>
+<div style="font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;">
 <h1 style="color: #d68c31">Latova Error</h1>
 <blockquote style="font-size: 15px;">
 	Oops! An internal error occured!<br />
@@ -60,7 +61,7 @@ HTML;
 HTML;
 		}
 
-		$html .= '<blockquote>You can reload the page by clicking <a href="javascript:history.go();">here</a>.</blockquote>';
+		$html .= '<blockquote>You can reload the page by clicking <a href="javascript:history.go();">here</a>.</blockquote></div>';
 
 		if($return === false) {
 			ob_end_clean();

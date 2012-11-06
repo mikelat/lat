@@ -59,17 +59,16 @@ class Highlighter {
 	}
 }
 ?>
-
-<div id="debug">
-	<b>Coded By:</b> Michael Lat<br />
-	<b>Version:</b> <?php echo $version; ?><br />
-	<b>Queries Executed:</b> <?php echo $queries; ?><br />
-	<b>Query Time:</b> <?php echo $query_time; ?><br />
-	<b>Exec Time:</b> <?php echo $exec_time; ?>
-
+<div class="tc">
+<strong>Coded By:</strong> Michael Lat
+<strong class="pl">Version:</strong> <?php echo $version; ?>
+<strong class="pl">Queries Executed:</strong> <?php echo $queries; ?>
+<strong class="pl">Query Time:</strong> <?php echo $query_time; ?>
+<strong class="pl">Exec Time:</strong> <?php echo $exec_time; ?>
+<strong class="pl"><a href="<?php echo Url::make('forum/cache') ?>">force cache reload</a></strong>
 </div>
-<div id="debug_link">
-	<a href="#" onclick="$('#debug_data').toggle(); return false;">debug</a> :: <a href="<?php echo Url::make('forum/cache') ?>">cache</a>
+<div id="debug">
+	<a href="#" onclick="$('#debug_data').toggle(); return false;">debug</a>
 </div>
 <ul id="debug_data">
 	<li id="debug_head">

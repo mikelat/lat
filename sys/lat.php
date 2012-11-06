@@ -12,7 +12,8 @@ Load::library('log');
 
 // Load default controller and buffer output
 require SYS . 'controller' . EXT;
-Controller::_init();
+require SYS . 'model' . EXT;
+Controller\Controller::_init();
 
 // Load database
 require Config::get('path_db') . $sql_cfg['driver'] . '/driver' . EXT;
@@ -22,9 +23,8 @@ unset($sql_cfg);
 
 // Default Libraries
 Load::library('session');
-Load::library('output');
+Load::library('parse');
 Load::library('cache');
-Load::library('input');
 Load::library('url');
 
 // Set defaults for libraries
@@ -38,7 +38,7 @@ if(Config::get('url') == "") {
 }
 
 // Add default JS files
-Output::js('url', Config::get('url'));
+Load::javascript_var('url', Config::get('url'));
 
 //DB::table('configuration')->set('option_value', 1)->update('option_name', 'bots_enabled', 'faf');
 //$var = DB::table('session')->limit(1)->row('user_id', 'session_id');
@@ -68,15 +68,21 @@ else {
 if(file_exists(Config::get('path_controller') . $class . EXT)) {
 	require Config::get('path_controller') . $class . EXT;
 	$class = ucwords($class);
+	$namespace = 'Controller\\' . $class;
+	$controller = new $namespace;
 
-	if(is_callable($class . '::' . $func)) {
-		forward_static_call_array(array($class, $func), $args);
+	if(is_callable(array($controller, $func))) {
+		$controller->_class('pg-' . strtolower($class));
+		$controller->_class('fn-' . $func);
+		call_user_func_array(array($controller, $func), $args);
 		$page_found = true;
 	}
 }
 
 if($page_found === false) {
 	Log::error("Page not found", 404);
+	$class = 'Controller';
 }
 
-Controller::_render();
+call_user_func(array($controller, '_buffer'));
+call_user_func(array($controller,  '_render'));

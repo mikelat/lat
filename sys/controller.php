@@ -1,10 +1,16 @@
-<?php
+<?php namespace Controller;
+
+use Log, Load, Output;
+
 class Controller {
+
+	public $_global_classes = array();
+	public $_html_buffer = array();
 
 	/*
 	 * Initalize page for buffering
 	 */
-	public static function _init() {
+	public function _init() {
 
 		// Page buffer error handling
 		$ob_error_handling = function($html) {
@@ -22,31 +28,61 @@ class Controller {
 	/*
 	 * All done, render the page
 	 */
-	public static function _render() {
+	public function _buffer() {
 		// load debug info if we're in development
 		if(ENVIRONMENT === 'development') {
-			self::_debug();
+			$this->_debug();
 		}
 
 		// grab buffered output
-		$html = ob_get_contents();
-		ob_end_clean();
+		$this->_html_buffer = ob_get_contents();
+		return $this->_html_buffer;
+	}
 
-		// compress and output!
+	/*
+	 * All done, render the page
+	 */
+	public function _render($html=null) {
+		ob_end_clean();
 		ob_start('ob_gzhandler');
-		if(!Input::get('json')) {
-			echo Load::view('wrapper', array('html' => $html));
+
+		// Standard render since nothing was passed
+		if($html === null) {
+			$classes = implode(" ", $this->_global_classes);
+
+			// send back as json array
+			if(isset($_POST['json']) && $_POST['json']) {
+				echo json_encode(array('content' => $this->_html_buffer, 'classes' => $classes, 'jsf' => Load::javascript_file(), 'jsv' => Load::javascript_var()));
+			}
+
+			// just output to the browser
+			else {
+				echo Load::view('wrapper', array(
+						'html' => $this->_html_buffer
+					,	'classes' => $classes
+				));
+			}
 		}
+		// This was called directly and therefore is overriding the default render output
 		else {
-			echo json_encode(array('content' => $html, 'js_files' => Output::js_file(), 'js_vars' => Output::js()));
+			echo $html;
 		}
+
 		ob_end_flush();
+		exit();
+	}
+
+	/*
+	 * Adds global class
+	 */
+	public function _class($class) {
+		$this->_global_classes[] = $class;
 	}
 
 	/*
 	 * Output debug info
 	 */
-	public static function _debug() {
+	public function _debug() {
 		$log = Log::get();
 		Load::view('debug', array(
 				'log' => $log
