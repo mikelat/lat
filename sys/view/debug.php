@@ -60,7 +60,7 @@ class Highlighter {
 }
 ?>
 <div class="tc">
-<strong>Coded By:</strong> Michael Lat
+<strong>Coded By:</strong> Mike Lat
 <strong class="pl">Version:</strong> <?php echo $version; ?>
 <strong class="pl">Queries Executed:</strong> <?php echo $queries; ?>
 <strong class="pl">Query Time:</strong> <?php echo $query_time; ?>

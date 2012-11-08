@@ -1,94 +1,148 @@
 $().ready(function(){
 
-	if($('#captcha').length) {
-		Recaptcha.create(
-			lat['validate']['recaptcha_public'], "captcha",
-			{
-				theme: "red",
-				callback: Recaptcha.focus_response_field
-			}
-		);
-	}
+	$('form:not([data-no-validate])').submit(function() {
+		var form_success = true;
 
-	$('form[data-ajax]').submit(function() {
-		var form_error = false;
-
-		$('.error', this).removeClass('error');
-		$('.msg', this).remove();
+		$('li.error', this).removeClass('error');
+		$('p.error-msg', this).html('');
+		$('div.error-msg', this).remove();
 
 		$('input', this).each(function() {
-			var msg = '';
-			var error = false;
+			var vfrm = validate_field(this);
 
-			// clear existing errors
-
-			// match another field
-			if($(this).data('match') !== undefined && $(this).val() !== $('#' + $(this).data('match')).val()) {
-				error = true;
-				msg = lat['validate']['error_validate_match'].replace('%s', $(this).data('match'));
+			if(vfrm['success'] == false) {
+				form_success = false;
 			}
-
-			// regex match
-			if($(this).data('regex') !== undefined) {
-				var v = $(this).val();
-				$.each($(this).data('regex').split(','), function(index, value) {
-					var r = lat['validate']['regex'][value].split('/');
-					r = new RegExp(r[1], r[2]);
-					if( ! r.test(v)) {
-						error = true;
-						msg = lat['validate']['error_regex_' + value];
-					}
-				});
-			}
-
-			// minimum characters
-			if($(this).data('minimum') !== undefined && $(this).val().length < $(this).data('minimum')) {
-				error = true;
-				msg = $(this).data('minimum') == 1 ? lat['validate']['error_validate_required'] : lat['validate']['error_validate_minimum'].replace('%s', $(this).data('minimum'));
-			}
-
-			// maximum characters
-			if($(this).data('maximum') !== undefined && $(this).val().length > $(this).data('maximum')) {
-				error = true;
-				msg = lat['validate']['error_validate_maximum'].replace('%s', $(this).data('maximum'));
-			}
-
-			if(error) {
-				form_error = true;
-				$(this).parent().addClass('error').find('label:eq(0)').after('<p class="msg">' + msg + '</p>');
-			}
-
 		});
-
-		if(!form_error) {
-			//$("button[type=submit]", this).prop('disabled', true);
+		
+		if(form_success) {
+			$("button[type=submit]", this).prop('disabled', true);
 
 			$.ajax({
-				type: 'POST',
-				url: $(this).attr('action'),
-				data: $(this).serialize() + '&submit=1',
-				success: function(json) {
+				type: 'POST'
+			,	url: $(this).attr('action')
+			,	data: $(this).serialize() + '&submit=1'
+			,	dataType: 'json'
+			,	success: function(json) {
 					if(json.success == false) {
-						Recaptcha.reload();
-
-						var x;
-						for(x in json.msg) {
-							if(x == 'lockout') {
-								popup({ content: json.msg[x], title: 'Locked Out', icon: 'caution' })
+						for(var x in json.msg) {
+							if(x == '_msg') {
+								$('footer', this).before('<div class="error-msg">' + json.msg[x] + '</div>');
 							} else {
 								$('#' + x).parent().addClass('error').find('label:eq(0)').after('<p class="msg">' + json.msg[x] + '</p>');
 							}
 						}
+						$("button[type=submit]", this).prop('disabled', false);
 					} else {
 						load_page(json);
 					}
-					//$("button[type=submit]", this).prop('disabled', false);
-				},
-				dataType: 'json'
+				}
 			});
-			//alert('this form will submit');
+		}
+		else {
+			$('footer', this).before('<div class="error-msg">' + language_error('_errors') + '</div>');
 		}
 
 		return false;
 	});
+	
+	$('form:not([data-no-validate]) input').keyup(validate_field).blur(validate_field);
 });
+
+
+function validate_field(field) {
+	
+	var e = null;
+	
+	// we got passed an input, probably from an event
+	if($(this).is('input')) {
+		e = field;
+		field = $(this);
+	}		
+
+	if(!(field instanceof jQuery)) {
+		field = $(field);
+	}
+	
+	var r = { 'success': true, 'msg': '' };
+	
+	// match another field
+	if(field.data('validate-match') !== undefined && field.val() !== $('#' + field.data('validate-match')).val()) {
+		r = { 'success': false, 'msg': language_error('match', field.data('validate-match')) };
+	}
+
+	// regex match
+	if(field.data('validate-regex') !== undefined) {
+		var regex = lat['regex'][field.data('validate-regex')].split('/');
+		regex = new RegExp(regex[1], regex[2]);
+
+		if( ! regex.test(field.val())) {
+			r = { 'success': false, 'msg': language_error('regex-' + field.data('validate-regex')) };
+		}
+	}
+
+	// minimum characters
+	if(field.data('validate-minlength') !== undefined && field.val().length < field.data('validate-minlength')) {
+		r = { 'success': false, 'msg': language_error('minlength', field.data('validate-minlength')) };
+	}
+
+	// maximum characters
+	if(field.data('validate-maxlength') !== undefined && field.val().length > field.data('validate-maxlength')) {
+		r = { 'success': false, 'msg': language_error('maxlength', field.data('validate-maxlength')) };
+	}
+		
+	if(r['success'] == false) {
+		clearTimeout(field.data('validate-ajax-timeout'));
+		field.parents('li').removeClass('ajaxing').addClass('error').find('p.error-msg').html(r['msg']);
+	} 
+	else {
+		// ajax check field
+		if(field.data('validate-ajax') !== undefined) {
+			if(field.data('validate-ajax-value') !== field.val()) {
+				field.data('validate-ajax-value', field.val()).parents('li').removeClass('error').addClass('ajaxing').find('p.error-msg').html(language_error('_ajax'));
+				clearTimeout(field.data('validate-ajax-timeout'));
+				field.data('validate-ajax-timeout', setTimeout(function(f) {
+					var post_data = { validate: 1 };
+					post_data[f.attr('id')] = f.val();
+					$.ajax({
+						type: 'POST'
+					,	url: f.parents('form').attr('action')
+					,	data: post_data
+					,	dataType: 'json'
+					,	success: function(json) {
+							if(json['success']) {
+								f.parents('li').removeClass('ajaxing error').find('p.error-msg').html(json['error'][field.attr('id')]);
+							}
+							else {
+								f.parents('li').removeClass('ajaxing').addClass('error').find('p.error-msg').html(json['error'][field.attr('id')]);
+							}
+						}
+					});
+				}, 1000, field));
+				return r;
+			}			
+		}
+		else {
+			field.parents('li').removeClass('error').find('p.error-msg').html('');
+		}
+	}
+	
+	return r;
+}
+
+function language_error(name, value) {
+	var str = "";
+
+	if(typeof lat['form_language'][name] !== 'undefined') {
+		str = lat['form_language'][name];
+	}
+	
+	if(typeof value != 'undefined' && typeof lat['form_language'][name + '-' + value] !== 'undefined') {
+		str = lat['form_language'][name + '-' + value];
+	}
+	else if(value != 'undefined') {
+		str = str.replace('%s', value);
+	}
+	
+	return str;
+}

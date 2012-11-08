@@ -17,6 +17,9 @@ define("SYS", ROOT . "sys/");
 // Data folder
 define("DAT", ROOT . "dat/");
 
+// Language
+define("LANGUAGE", "en");
+
 // Define paths
 $cfg = array(
 		'path_controller' => SYS . 'controller/'

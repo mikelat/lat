@@ -10,6 +10,9 @@ require Config::get('path_library') . 'load' . EXT;
 // Logging Library
 Load::library('log');
 
+// Global Language
+Load::language('_global');
+
 // Load default controller and buffer output
 require SYS . 'controller' . EXT;
 require SYS . 'model' . EXT;
@@ -53,10 +56,6 @@ $page_found = false;
 if($class == null) {
 	$class = 'forum'; // TODO: replace this later with actual configuration option
 }
-// invalid page
-elseif(!preg_match("/^[a-z][a-z_]*/", $class)) {
-	Log::error("Page not found", 404);
-}
 
 if($func == null || !preg_match("/^[a-z][a-z_]*/", $func)) {
 	$func = 'index';
@@ -65,24 +64,14 @@ else {
 	$args = array_slice($args, 1);
 }
 
-if(file_exists(Config::get('path_controller') . $class . EXT)) {
-	require Config::get('path_controller') . $class . EXT;
-	$class = ucwords($class);
-	$namespace = 'Controller\\' . $class;
-	$controller = new $namespace;
+$controller = Load::controller($class);
 
-	if(is_callable(array($controller, $func))) {
-		$controller->_class('pg-' . strtolower($class));
-		$controller->_class('fn-' . $func);
-		call_user_func_array(array($controller, $func), $args);
-		$page_found = true;
-	}
-}
-
-if($page_found === false) {
+if($controller === false || !is_callable(array($controller, $func))) {
 	Log::error("Page not found", 404);
-	$class = 'Controller';
 }
 
+$controller->_class('pg-' . strtolower($class));
+$controller->_class('fn-' . $func);
+call_user_func_array(array($controller, $func), $args);
 call_user_func(array($controller, '_buffer'));
-call_user_func(array($controller,  '_render'));
+call_user_func(array($controller, '_render'));

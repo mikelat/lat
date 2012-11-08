@@ -23,7 +23,7 @@ class Load {
 	 * @param string $file
 	 */
 	public static function model($file) {
-		require_once Config::get('path_model') . strtolower($file) . EXT;
+		require_once Config::get('path_model') . 'mdl_' . strtolower($file) . EXT;
 		Log::debug("Loaded {$file} model.");
 	}
 
@@ -56,13 +56,36 @@ class Load {
 	}
 
 	/**
+	 * Loads a controller and returns it as an object
+	 *
+	 * @param string $file
+	 */
+	public static function controller($file) {
+
+		// Invalid name for a controller
+		if(!preg_match("/^[a-z][a-z_]*/", $file)) {
+			return false;
+		}
+
+		if(file_exists(Config::get('path_controller') . $file . EXT)) {
+			require Config::get('path_controller') . $file . EXT;
+			$namespace = 'Controller\\' . ucwords($file);
+			Log::info('Loaded ' . $file . ' controller.');
+			self::language($file);
+			return new $namespace;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Loads a language file
 	 *
 	 * @param string $file
 	 */
 	public static function language($file) {
-		if(file_exists(Config::get('path_language') . strtolower($file) . EXT)) {
-			require Config::get('path_language') . strtolower($file) . EXT;
+		if(file_exists(Config::get('path_language') . LANGUAGE . '/lng_' . strtolower($file) . EXT)) {
+			require Config::get('path_language') . LANGUAGE . '/lng_' . strtolower($file) . EXT;
 			self::$lang[$file] = $language;
 			Log::debug("Loaded {$file} language file.");
 		}
@@ -75,7 +98,7 @@ class Load {
 	 */
 	public static function word($file, $word) {
 		if(isset(self::$lang[$file][$word])) {
-			return self::$lang[$file][$word];
+			return func_num_args() <= 2 ? self::$lang[$file][$word] : vsprintf(self::$lang[$file][$word], array_slice(func_get_args(), 2));
 		}
 		else {
 			return null;

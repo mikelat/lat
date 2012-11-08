@@ -1,5 +1,7 @@
 var js = { loaded: 0, count: 0, code: [], data_buffer: null };
 
+$.ajaxSetup({cache: false});
+
 $().ready(function(){
 	init();
 	
@@ -44,51 +46,13 @@ function init(context) {
 }
 
 /**
- * Controls the ajax indicator
- * 
- * @param act
- */
-function ajax_loading(act) {
-	// Toggle
-	if(typeof act == 'undefined') {
-		if($('#loading').is(':visible')) {
-			act = 'hide';
-		} else {
-			act = 'show';
-		}
-	}
-	console.log(act)
-	
-	// Remove the indicator
-	if(act == 'hide') {
-		clearInterval($('#loading').data('interval'));
-		$('#loading').remove();
-		console.log('test')
-	}
-	// Show the indicator
-	else if (act == 'show') {
-		$('#content').after('<div id="loading"></div>');
-		var obj_load = $('#loading');
-		var loading_r = 0;
-		// interval for spinning the indicator
-		obj_load.data('interval', setInterval(function(){
-			loading_r = (loading_r + 1) % 360;
-			obj_load.css({ WebkitTransform: 'rotate(' + loading_r + 'deg)', '-moz-transform': 'rotate(' + loading_r + 'deg)'});
-		}, 5));
-
-	}
-}
-
-/**
  * Loads a new page by ajax
  * 
  * @param url
  */
 function get_page(url) {
 	if (typeof window.history.pushState == 'function') {
-		$('#content *').off();
 		$("#content").css({ opacity: 0.5 });
-		ajax_loading('show');
 		$.ajax({
 			type: 'POST',
 			url: url,
@@ -147,9 +111,9 @@ function load_page(data) {
 
 	// load content onto the page
 	$('html').attr('class', data['classes']);
-	$('#content').html(data['content']);//.data('hidden', 0).fadeIn('fast');
+	$('#content *').off();
+	$('#content').html(data['content']); //.data('hidden', 0).fadeIn('fast');
 	$("#content").css({ opacity: 1 });
 	// finish up and initalize the page
-	ajax_loading('hide');
 	init('#content');
 }

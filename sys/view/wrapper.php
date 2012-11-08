@@ -23,7 +23,7 @@
 	</nav>
 	<section>
 		<div id="user-avatar">
-			<img src="<?php echo Url::make('avatar.png', true) ?>" class="avatar" alt="User Avatar" />
+			<img src="<?php echo Url::make('avatar.png', true) ?>" class="avatar" alt="" />
 		</div>
 		<nav id="nav-secondary">
 			<ul>
@@ -36,11 +36,11 @@
 		</nav>
 		<h1><a href="<?php echo Url::make() ?>">Lat Forum</a></h1>
 		<form action="<?php echo Url::make('search') ?>" method="post" id="search">
-			<input type="text" placeholder="enter search terms" />
+			<input type="text" placeholder="<?php echo Load::word('_global', 'enter_search_terms') ?>" />
 			<input type="hidden" name="section" id="search-section" value="" />
-			<a href="#" id="search-button" class="btn c2">search</a>
-			<a href="<?php echo Url::make('account') ?>" class="btn c1">login</a>
-			<a href="<?php echo Url::make('account/signup') ?>" class="btn c1">sign up</a>
+			<a href="#" id="search-button" class="btn c2"><?php echo Load::word('_global', 'search') ?></a>
+			<a href="<?php echo Url::make('account') ?>" class="btn c1"><?php echo Load::word('_global', 'login') ?></a>
+			<a href="<?php echo Url::make('account/signup') ?>" class="btn c1"><?php echo Load::word('_global', 'signup') ?></a>
 		</form>
 	</section>
 </header>

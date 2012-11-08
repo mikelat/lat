@@ -46,6 +46,9 @@ class Controller {
 		ob_end_clean();
 		ob_start('ob_gzhandler');
 
+		// Headers
+		header("Cache-Control: no-cache, must-revalidate");
+
 		// Standard render since nothing was passed
 		if($html === null) {
 			$classes = implode(" ", $this->_global_classes);
@@ -65,6 +68,10 @@ class Controller {
 		}
 		// This was called directly and therefore is overriding the default render output
 		else {
+			if(is_array($html)) {
+				$html = json_encode($html);
+			}
+
 			echo $html;
 		}
 

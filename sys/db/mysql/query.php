@@ -102,6 +102,18 @@ class DB extends Driver {
 	/**
 	 * Executes built database query and returns a single row
 	 */
+	public function num() {
+		if(func_num_args() > 0) {
+			call_user_func_array(array($this, "where"), func_get_args());
+		}
+
+		$query = self::obj();
+		return $query->rowCount();
+	}
+
+	/**
+	 * Executes built database query and returns a single row
+	 */
 	public function row() {
 		$query = call_user_func_array(array($this, "obj"), func_get_args());
 		return $query->fetch(\PDO::FETCH_ASSOC);
