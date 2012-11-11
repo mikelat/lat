@@ -31,10 +31,8 @@
 					,	'validate' => array('minlength:6', 'match:password')
 				)); ?>
 
-			<li>
-				<label>Captcha</label>
-				Coming soon
-			</li>
+			<?php echo Form::captcha(); ?>
+
 		</ul>
 		<footer>
 			<button type="submit">Register</button>

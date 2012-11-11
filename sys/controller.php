@@ -48,6 +48,7 @@ class Controller {
 
 		// Headers
 		header("Cache-Control: no-cache, must-revalidate");
+		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
 
 		// Standard render since nothing was passed
 		if($html === null) {

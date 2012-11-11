@@ -81,7 +81,7 @@ function load_page(data) {
 	// refresh variable array
 	lat = data['jsv'];
 
-	if(data.js_files) {
+	if(data['jsf']) {
 		js['count'] = data['jsf'].length;
 		js['loaded'] = 0;
 

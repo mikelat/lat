@@ -50,6 +50,7 @@
 <script>var lat = <?php echo json_encode(Load::javascript_var()) ?></script>
 <script src="<?php echo Url::make('js/jquery.js', true) ?>"></script>
 <script src="<?php echo Url::make('js/init.js', true) ?>"></script>
+<?php if(Config::get('recaptcha_public')) { ?><script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script><?php } ?>
 <script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
 <?php
 	foreach(Load::javascript_file() as $jf) {

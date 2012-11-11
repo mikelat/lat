@@ -19,8 +19,8 @@ require SYS . 'model' . EXT;
 Controller\Controller::_init();
 
 // Load database
-require Config::get('path_db') . $sql_cfg['driver'] . '/driver' . EXT;
-require Config::get('path_db') . $sql_cfg['driver'] . '/query' . EXT;
+require Config::get('path_database') . $sql_cfg['driver'] . '/driver' . EXT;
+require Config::get('path_database') . $sql_cfg['driver'] . '/query' . EXT;
 DB::load($sql_cfg);
 unset($sql_cfg);
 

@@ -12,6 +12,10 @@ class Form {
 	);
 	private static $language_buffer = array();
 	private static $regex_buffer = array();
+	private static $captcha = array('enabled' => false, 'checked' => false, 'result' => false);
+
+	const recaptcha_server = 'http://www.google.com/recaptcha/api/verify';
+	const recaptcha_port = 80;
 
 	/**
 	 * Returns an encoded input for increased safety
@@ -56,7 +60,7 @@ class Form {
 	 * @return boolean
 	 */
 	public static function request_validate($name=null) {
-		return (boolean) self::get('validate') || self::get('submit');
+		return (boolean) self::get('validate');
 	}
 
 	/**
@@ -84,7 +88,6 @@ class Form {
 	 * @return string
 	 */
 	public static function input($arr, $return=false) {
-
 		$attr = "";
 		$label = "";
 		$class = array();
@@ -111,7 +114,7 @@ class Form {
 							$attr .= ' data-validate-' . $val[0] . '="' . $val[1] . '"';
 
 							// store this for PHP later
-							self::$validate_fields[$form][$attr['name']][$val[0]] = $val[1];
+							self::$validate_fields[$form][$arr['name']][$val[0]] = $val[1];
 
 							// add it to the li class for any styling changes
 							$class[] = 'validate-' . $val[0];
@@ -132,7 +135,7 @@ class Form {
 							$attr .= ' data-validate-' . $validate;
 
 							// store this for PHP later
-							self::$validate_fields[$form][$attr['name']][$validate] = true;
+							self::$validate_fields[$form][$arr['name']][$validate] = true;
 
 							// add it to the li class for any styling changes
 							$class[] = 'validate-' . $validate;
@@ -217,17 +220,16 @@ class Form {
 	 * @return array
 	 */
 	public static function is_valid($form=null) {
-		$return = array('success' => false, 'error' => array());
+		$return = array('_success' => true);
+
 		if($form === null) {
 			$form = end(self::$forms);
 		}
 
 		// Not a form, validating, or not posting.
 		if((!self::request_validate() && !self::request_submit()) || !isset(self::$validate_fields[$form])) {
-			return $return;
+			return array('_success' => false);
 		}
-
-		$return['success'] = true;
 
 		// It's a validation request, which won't submit. Ignore validation.
 		if(self::request_validate() && !self::request_submit()) {
@@ -236,41 +238,127 @@ class Form {
 
 		foreach(self::$validate_fields[$form] as $name => $validate) {
 			$value = self::get($name);
+			$return[$name]['success'] = true;
 
 			foreach($validate as $n => $v) {
 				switch($n) {
 					case 'minlength':
 						if(strlen($value) < $v) {
-							$return['error'][$name] = self::language_error($n, $v);
-							$return['success'] = false;
+							$return[$name]['msg'] = self::language_error($n, $v);
+							$return[$name]['success'] = false;
 						}
 					break;
 
 					case 'maxlength':
 						if(strlen($value) > $v) {
-							$return['error'][$name] = self::language_error($n, $v);
-							$return['success'] = false;
+							$return[$name]['msg'] = self::language_error($n, $v);
+							$return[$name]['success'] = false;
 						}
 					break;
 
 					case 'regex':
 						if(!preg_match(self::regex($v), $value)) {
-							$return['error'][$name] = self::language_error('regex-' . $v);
-							$return['success'] = false;
+							$return[$name]['msg'] = self::language_error('regex-' . $v);
+							$return[$name]['success'] = false;
 						}
 					break;
 
 					case 'match':
 						if(self::get($name) !== self::get($v)) {
-							$return['error'][$name] = self::language_error($n, $v);
-							$return['success'] = false;
+							$return[$name]['msg'] = self::language_error($n, $v);
+							$return[$name]['success'] = false;
 						}
 					break;
 				}
+
+				$return['_success'] = $return[$name]['success'] ? $return['_success'] : false;
 			}
 		}
 
+		if($return['_success'] == true && self::request_submit()) {
+			$return['_captcha'] = self::captcha_is_valid();
+			$return['_success'] = $return['_captcha'];
+		}
+
 		return $return;
+	}
+
+	/**
+	 * Create input from array
+	 *
+	 * @param array $arr
+	 * @return string
+	 */
+	public static function captcha() {
+		self::$captcha['enabled'] = true;
+		self::$language_buffer['captcha_wrong'] = Load::word('_form', 'captcha_wrong');
+		Load::javascript_var('recaptcha_theme', Config::get('recaptcha_theme'));
+		Load::javascript_var('recaptcha_public', Config::get('recaptcha_public'));
+		return '<li class="validate-minlength captcha"><label>' . Load::word('_form', 'captcha') . '</label><div id="captcha"></div><p class="error-msg"></p></li>';
+	}
+
+	/**
+	 * Queries the recaptcha server and checks the captcha
+	 *
+	 * @return boolean
+	 */
+	public static function captcha_is_valid() {
+		// Already checked it
+		if(self::$captcha['checked'] == true) {
+			return self::$captcha['result'];
+		}
+
+		// Junk response
+		if(!self::$captcha['enabled'] || !isset($_POST['recaptcha_response_field']) || !$_POST['recaptcha_response_field'] || !isset($_POST['recaptcha_challenge_field']) || !$_POST['recaptcha_challenge_field']) {
+			return false;
+		}
+
+		$response = '';
+		$path = parse_url(static::recaptcha_server, PHP_URL_PATH);
+		$host = parse_url(static::recaptcha_server, PHP_URL_HOST);
+
+		// Prepare data for sending
+		$data = 'privatekey=' . Config::get('recaptcha_private') . '&remoteip=' . Session::get('ip_address');
+		$data .= '&challenge=' . urlencode(stripslashes($_POST['recaptcha_challenge_field']));
+		$data .= '&response=' . urlencode(stripslashes($_POST['recaptcha_response_field']));
+
+		// Headers
+		$http  = "POST " . $path . " HTTP/1.0\r\n";
+		$http .= "Host: " . $host . " \r\n";
+		$http .= "Content-Type: application/x-www-form-urlencoded;\r\n";
+		$http .= "Content-Length: " . strlen($data) . "\r\n\r\n";
+		$http .= $data;
+
+		// Query the recaptcha server
+		$fs = fsockopen($host, static::recaptcha_port, $error_number, $error_string, 10);
+
+		if(!$fs) {
+			Log::halt(Load::word('_form', 'halt_recaptcha'));
+		}
+
+		fwrite($fs, $http);
+
+		while ( !feof($fs) )
+			$response .= fgets($fs, 1160);
+		fclose($fs);
+
+		// Parse reponse
+		$response = explode("\r\n\r\n", $response);
+		$response = explode("\n", $response[1]);
+		self::$captcha['checked'] = true;
+
+		// Successful captcha
+		if(trim($response[0]) == 'true') {
+			Log::info('Captcha challenge passed.');
+			self::$captcha['result'] = true;
+		}
+		// Unsuccessful captcha
+		else {
+			Log::info('Captcha challenge failed. Error returned: ' . $response[0]);
+			self::$captcha['result'] = false;
+		}
+
+		return self::$captcha['result'];
 	}
 
 	/**
@@ -280,7 +368,6 @@ class Form {
 	 * @param string $value
 	 * @return string
 	 */
-
 	private static function language_error($name, $value=null) {
 		if($value !== null && Load::word('_form', $name . '-' . $value) !== null) {
 			return Load::word('_form', $name . '-' . $value);
@@ -298,7 +385,6 @@ class Form {
 	 * @param string $value
 	 * @return string
 	 */
-
 	private static function store_error($name, $value=null) {
 		if($value !== null && Load::word('_form', $name . '-' . $value) !== null) {
 			self::$language_buffer[$name . '-' . $value] = Load::word('_form', $name . '-' . $value);

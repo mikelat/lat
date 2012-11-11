@@ -1,8 +1,19 @@
 <?php
 class Session {
 
+	private static $session_data = array();
+
+	public static function get($name = null) {
+
+		if($name === null) {
+			return static::$session_data;
+		}
+
+		return isset(static::$session_data[$name]) ? static::$session_data[$name] : null;
+	}
+
 	public static function load() {
-		$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
+		self::$session_data['ip_address'] = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
 		$session_id = preg_replace("/[^0-9A-F.]/", "", strtoupper(self::cookie("sid")));
 
 

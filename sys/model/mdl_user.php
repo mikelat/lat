@@ -14,7 +14,7 @@ class User extends Model {
 	 * @return boolean
 	 */
 	public static function create($arr) {
-
+return 'test';
 	}
 
 	/**

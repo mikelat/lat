@@ -12,12 +12,7 @@ class Config {
 			return static::$config;
 		}
 
-		if(isset(static::$config[$cfg])) {
-			return static::$config[$cfg];
-		}
-		else {
-			return null;
-		}
+		return isset(static::$config[$cfg]) ? static::$config[$cfg] : null;
 	}
 
 	/**

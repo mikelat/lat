@@ -142,7 +142,7 @@ class Load {
 		}
 		// grabbing specific var
 		else if($value === null && $name !== null) {
-			return self::$js_var[$name];
+			return isset(self::$js_var[$name]) ? self::$js_var[$name] : null;
 		}
 		// returning everything
 		else {

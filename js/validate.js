@@ -1,52 +1,54 @@
+
 $().ready(function(){
+	$('#content form:not([data-no-validate]) button[type=submit]').click(function() {
 
-	$('form:not([data-no-validate])').submit(function() {
-		var form_success = true;
+		var form = $(this).parents('form');
+		
+		$('li.error', form).removeClass('error');
+		$('p.error-msg', form).html('');
+		$('div.error-msg', form).remove();
+		$(this).prop('disabled', true);
 
-		$('li.error', this).removeClass('error');
-		$('p.error-msg', this).html('');
-		$('div.error-msg', this).remove();
-
-		$('input', this).each(function() {
-			var vfrm = validate_field(this);
-
-			if(vfrm['success'] == false) {
-				form_success = false;
+		$.ajax({
+			type: 'POST'
+		,	url: form.attr('action')
+		,	data: form.serialize() + '&submit=1'
+		,	dataType: 'json'
+		,	success: function(json) {
+				if(json['_success'] == false) {
+					//console.log(this, $(this));
+					$('button[type=submit]:last', form).prop('disabled', false);
+					var global_error = language_error('_errors');
+					for(var x in json) {
+						if(x == '_msg') {
+							global_error = json[x];
+						}
+						else if(x == '_captcha') {
+							$('#recaptcha_response_field').parents('li').addClass('error').find('p.error-msg').html(language_error('captcha_wrong'));
+							Recaptcha.reload();
+						} 
+						else if(x.charAt(0) != '_') {
+							if(!json[x]['success']) {
+								$('#' + x).parents('li').addClass('error');
+							}
+							$('#' + x).parents('li').find('p.error-msg').html(json[x]['msg']);
+						}
+					}
+					$('footer', form).before('<div class="error-msg">' + global_error + '</div>');
+				} else {
+					load_page(json);
+				}
 			}
 		});
-		
-		if(form_success) {
-			$("button[type=submit]", this).prop('disabled', true);
-
-			$.ajax({
-				type: 'POST'
-			,	url: $(this).attr('action')
-			,	data: $(this).serialize() + '&submit=1'
-			,	dataType: 'json'
-			,	success: function(json) {
-					if(json.success == false) {
-						for(var x in json.msg) {
-							if(x == '_msg') {
-								$('footer', this).before('<div class="error-msg">' + json.msg[x] + '</div>');
-							} else {
-								$('#' + x).parent().addClass('error').find('label:eq(0)').after('<p class="msg">' + json.msg[x] + '</p>');
-							}
-						}
-						$("button[type=submit]", this).prop('disabled', false);
-					} else {
-						load_page(json);
-					}
-				}
-			});
-		}
-		else {
-			$('footer', this).before('<div class="error-msg">' + language_error('_errors') + '</div>');
-		}
 
 		return false;
 	});
+
+	if($('#captcha').length) {
+		Recaptcha.create(lat['recaptcha_public'], 'captcha', { theme: lat['recaptcha_theme'] });
+	}
 	
-	$('form:not([data-no-validate]) input').keyup(validate_field).blur(validate_field);
+	$('#content form:not([data-no-validate]) input').keyup(validate_field).blur(validate_field);
 });
 
 
@@ -65,9 +67,9 @@ function validate_field(field) {
 	}
 	
 	var r = { 'success': true, 'msg': '' };
-	
+
 	// match another field
-	if(field.data('validate-match') !== undefined && field.val() !== $('#' + field.data('validate-match')).val()) {
+	if(field.data('validate-match') !== undefined && $('#' + field.data('validate-match')).val() != '' && field.val() !== $('#' + field.data('validate-match')).val()) {
 		r = { 'success': false, 'msg': language_error('match', field.data('validate-match')) };
 	}
 
@@ -110,11 +112,11 @@ function validate_field(field) {
 					,	data: post_data
 					,	dataType: 'json'
 					,	success: function(json) {
-							if(json['success']) {
-								f.parents('li').removeClass('ajaxing error').find('p.error-msg').html(json['error'][field.attr('id')]);
+							if(json[f.attr('id')]['success']) {
+								f.parents('li').removeClass('ajaxing error').find('p.error-msg').html(json[field.attr('id')]['msg']);
 							}
 							else {
-								f.parents('li').removeClass('ajaxing').addClass('error').find('p.error-msg').html(json['error'][field.attr('id')]);
+								f.parents('li').removeClass('ajaxing').addClass('error').find('p.error-msg').html(json[field.attr('id')]['msg']);
 							}
 						}
 					});

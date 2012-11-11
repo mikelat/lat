@@ -65,16 +65,8 @@ class Cache {
 		// 2 columns means its a key
 		if(!empty($query)) {
 			if(count($query[0]) === 2) {
-				// configuration we split a bit differently
-				if($name === 'configuration') {
-					foreach($query as $q) {
-						$keys = self::set_configuration_cache($new_cache, explode("_", reset($q)), end($q));
-					}
-				}
-				else {
-					foreach($query as $q) {
-						$new_cache[reset($q)] = end($q);
-					}
+				foreach($query as $q) {
+					$new_cache[reset($q)] = end($q);
 				}
 			}
 			else {

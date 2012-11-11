@@ -23,11 +23,11 @@ define("LANGUAGE", "en");
 // Define paths
 $cfg = array(
 		'path_controller' => SYS . 'controller/'
+	,	'path_database' => SYS . 'database/'
 	,	'path_language' => SYS . 'language/'
 	,	'path_library' => SYS . 'library/'
 	,	'path_model' => SYS . 'model/'
 	,	'path_view' => SYS . 'view/'
-	,	'path_db' => SYS . 'db/'
 );
 
 // Define enviroments
