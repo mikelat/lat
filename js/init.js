@@ -22,6 +22,8 @@ $().ready(function(){
 function init(context) {
 	if(typeof context == 'undefined') context = null;
 
+	history.replaceState({}, document.title, lat['current_url']);
+	
 	if(js['count'] != js['loaded']) {
 		return false;
 	}
@@ -102,11 +104,6 @@ function load_page(data) {
 	} else {
 		js['count'] = 0;
 		js['loaded'] = 0;
-	}
-
-	// if a new url was provided (possible redirect?) then use that instead
-	if(data['url']) {
-		history.replaceState({}, document.title, data['url']);
 	}
 
 	// load content onto the page

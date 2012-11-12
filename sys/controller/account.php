@@ -1,24 +1,25 @@
 <?php namespace Controller;
 
-use Load, Form, Parse, Model\User;
+use Load, Form, Url, Session, Model\User;
 
 class Account extends Controller {
 
+	public function __construct() {
+		Load::model('user');
+		Load::library('form');
+	}
+
 	public function index() {
-		echo "this is the account page";
-		usleep(2000000);
+
 	}
 
 	public function signup() {
-		Load::library('form');
-		Load::model('user');
-
 		// Output the Form
 		Load::view('account/signup');
 
 		if(Form::request_validate() || Form::request_submit()) {
 			$validate = Form::is_valid();
-			$display_name = Form::get('display_name');
+			$display_name = trim(Form::get('display_name'));
 
 			if($display_name) {
 				$dn_avaliable = User::display_name_avaliable($display_name);
@@ -28,25 +29,18 @@ class Account extends Controller {
 			}
 
 			if($validate['_success'] && Form::request_submit()) {
-				echo User::create(array(
+				User::create(array(
 						'email_address' => Form::get('email_address')
 					,	'display_name' => Form::get('display_name')
 					,	'password' => Form::get('password')
+					,	'ip_address' => Session::get('ip_address')
 				));
+
+				Url::load('/', "<h3>Thanks for signing up! Login coming soon!</h3><br /><br />");
 			}
 			else {
 				$this->_render($validate);
 			}
 		}
-	}
-
-	public function test() {
-		Load::model('user');
-		Load::library('form');
-		echo User::create(array(
-				'email_address' => Form::get('email_address')
-			,	'display_name' => Form::get('display_name')
-			,	'password' => Form::get('password')
-		));
 	}
 }

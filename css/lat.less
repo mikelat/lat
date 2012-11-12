@@ -27,7 +27,15 @@
 
 @font: "Helvetica Neue", Helvetica, Arial, sans-serif;
 @font-size: 13px;
-@site-width: 960px;
+@site-width: 90%;
+@site-width-tablet: 95%;
+@site-width-phone: 98%;
+
+@tablet: 800px;
+@mobile: 480px;
+
+@desktop_minimum: @tablet + 1px;
+@tablet_minimum: @mobile + 1px;
 
 /* Functions */
 .gradient (@c1, @c2, @s1:0, @s2:100) {

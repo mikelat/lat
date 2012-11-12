@@ -79,6 +79,46 @@ class DB extends Driver {
 	/**
 	 * Executes built database query and updates
 	 */
+	public function insert() {
+
+		$args = func_get_args();
+
+		if(is_array($args[0]) || func_num_args() > 1) {
+			$this->sql['insert'] = $args;
+		}
+		else {
+			$this->sql['insert'] = array($args);
+		}
+
+		// build and run query
+		$this->sql['type'] = "insert";
+		$raw_query = $this->build($this->sql);
+		$query = $this->query($raw_query[0], $raw_query[1]);
+	}
+
+	/**
+	 * Executes built database query and updates
+	 */
+	public function replace() {
+
+		$args = func_get_args();
+
+		if(is_array($args[0])) {
+			$this->sql['insert'] = $args[0];
+		}
+		else {
+			$this->sql['insert'] = $args;
+		}
+
+		// build and run query
+		$this->sql['type'] = "replace";
+		$raw_query = $this->build($this->sql);
+		$query = $this->query($raw_query[0], $raw_query[1]);
+	}
+
+	/**
+	 * Executes built database query and updates
+	 */
 	public function update() {
 		// send arguments to where clause
 		if(func_num_args() > 0) {

@@ -1,7 +1,7 @@
 <?php
 $language = array(
-		'enter_search_terms' => 'enter search terms'
-	,	'search' => 'Search'
+		'search' => 'Search'
+	,	'go' => 'Go'
 	,	'login' => 'Login'
 	,	'signup' => 'Sign up'
 );

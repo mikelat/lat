@@ -24,7 +24,7 @@ class Form {
 	 * @return string
 	 */
 	public static function get($name=null) {
-		return Parse::html_encode(self::raw($name));
+		return String::html_encode(self::raw($name));
 	}
 
 	/**

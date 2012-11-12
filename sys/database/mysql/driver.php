@@ -10,8 +10,19 @@ class Driver {
 	public static function query($query, $data=null) {
 		$q = self::$connection->prepare($query);
 
+		if(!$q) {
+			echo 'test';
+
+		}
+
 		$timer = microtime(true);
 		$q->execute($data);
+		$error = $q->errorInfo();
+
+		if($error[0] !== '00000' && ENVIRONMENT === 'development') {
+			Log::halt('Database Query Error: ' . $error[2] . "\n\nQuery Ran: " . $q->queryString);
+		}
+
 		Log::query(str_replace(array_keys($data), array_values( explode(",", '"' . implode('","', $data) . '"') ), $q->queryString), microtime(true) - $timer);
 
 		return $q;
@@ -57,6 +68,12 @@ class Driver {
 			case 'delete':
 				$query = "DELETE ";
 				break;
+			case 'insert':
+				$query = "INSERT INTO ";
+				break;
+			case 'replace':
+				$query = "REPLACE INTO ";
+				break;
 		}
 
 		$query .= self::prefix($sql['table']);
@@ -70,7 +87,7 @@ class Driver {
 			$query .= " SET " . implode(", ", $set);
 		}
 
-		// SET
+		// WHERE
 		if(isset($sql['where'])) {
 			$query .= " WHERE " . self::parse_where($sql['where'], $data);
 		}
@@ -99,6 +116,21 @@ class Driver {
 				$query .= " LIMIT " . intval($sql['limit'][0]) . "," . intval($sql['limit'][1]);
 			}
 		}
+
+		// INSERT/REPLACE
+		if(isset($sql['insert'])) {
+			$query .= ' ('. implode(', ', array_keys($sql['insert'][0])) . ') VALUES';
+
+			foreach($sql['insert'] as $ins) {
+				$i = array();
+				foreach($ins as $v) {
+					$i[] = ':v'.count($data);
+					$data[':v'.count($data)] = $v;
+				}
+				$query .= ' (' . implode(", ", $i) .')';
+			}
+		}
+
 
 		return array($query, $data);
 		/*

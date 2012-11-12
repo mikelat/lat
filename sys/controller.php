@@ -7,10 +7,11 @@ class Controller {
 	public $_global_classes = array();
 	public $_html_buffer = array();
 
-	/*
-	 * Initalize page for buffering
+	/**
+	 * Starts a buffer and clears the last one if applicable
 	 */
-	public function _init() {
+	public function _clear() {
+		ob_end_clean();
 
 		// Page buffer error handling
 		$ob_error_handling = function($html) {
@@ -25,8 +26,10 @@ class Controller {
 		ob_start($ob_error_handling);
 	}
 
-	/*
-	 * All done, render the page
+	/**
+	 * Get HTML buffer
+	 *
+	 * @return string:
 	 */
 	public function _buffer() {
 		// load debug info if we're in development
@@ -39,8 +42,10 @@ class Controller {
 		return $this->_html_buffer;
 	}
 
-	/*
-	 * All done, render the page
+	/**
+	 * Output the page!
+	 *
+	 * @param string $html
 	 */
 	public function _render($html=null) {
 		ob_end_clean();
@@ -49,6 +54,10 @@ class Controller {
 		// Headers
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+
+		if(isset($_POST['submit']) && $_POST['submit'] || isset($_POST['validate']) && $_POST['validate']) {
+			$_POST['json'] = 1;
+		}
 
 		// Standard render since nothing was passed
 		if($html === null) {
@@ -80,15 +89,17 @@ class Controller {
 		exit();
 	}
 
-	/*
-	 * Adds global class
+	/**
+	 * Adds a new string to html classes
+	 *
+	 * @param string $class
 	 */
 	public function _class($class) {
 		$this->_global_classes[] = $class;
 	}
 
-	/*
-	 * Output debug info
+	/**
+	 * Output debug information
 	 */
 	public function _debug() {
 		$log = Log::get();
