@@ -36,9 +36,6 @@ class Log {
 	 * For times when proper error messages won't work
 	 */
 	public static function halt($msg, $return=false) {
-		if($return === false) {
-			ob_end_clean();
-		}
 
 		$html = <<<HTML
 <!doctype html>
@@ -56,7 +53,7 @@ HTML;
 			$html .= <<<HTML
 <blockquote>
 	<div style="color:red">System currently in debugging mode. Outputting error:</div>
-	<textarea rows="4" cols="60" style="border: 1px red solid; padding: 2px;">{$msg}</textarea>
+	<textarea rows="6" cols="80" style="border: 1px red solid; padding: 2px;">{$msg}</textarea>
 </blockquote>
 HTML;
 		}

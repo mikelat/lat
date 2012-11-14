@@ -165,7 +165,7 @@ class Form {
 
 		// standard return
 		if(!$return) {
-			return '<li' . (!empty($class) ? ' class="' . implode(' ', $class) . '">' : '>') . $label . '<input' . $attr . ' /><p class="error-msg"></p></li>';
+			return '<li' . (!empty($class) ? ' class="' . implode(' ', $class) . '">' : '>') . $label . '<input' . $attr . ' /><span class="error-msg"></span></li>';
 		}
 		// returning vars instead of standard li output
 		else {
@@ -294,7 +294,7 @@ class Form {
 		self::$language_buffer['captcha_wrong'] = Load::word('_form', 'captcha_wrong');
 		Load::javascript_var('recaptcha_theme', Config::get('recaptcha_theme'));
 		Load::javascript_var('recaptcha_public', Config::get('recaptcha_public'));
-		return '<li class="validate-minlength captcha"><label>' . Load::word('_form', 'captcha') . '</label><div id="captcha"></div><p class="error-msg"></p></li>';
+		return '<li class="validate-minlength captcha"><label>' . Load::word('_form', 'captcha') . '</label><div id="captcha"></div><span class="error-msg"></span></li>';
 	}
 
 	/**
@@ -318,7 +318,7 @@ class Form {
 		$host = parse_url(static::recaptcha_server, PHP_URL_HOST);
 
 		// Prepare data for sending
-		$data = 'privatekey=' . Config::get('recaptcha_private') . '&remoteip=' . Session::get('ip_address');
+		$data = 'privatekey=' . Config::get('recaptcha_private') . '&remoteip=' . Session::ip_address();
 		$data .= '&challenge=' . urlencode(stripslashes($_POST['recaptcha_challenge_field']));
 		$data .= '&response=' . urlencode(stripslashes($_POST['recaptcha_response_field']));
 

@@ -70,7 +70,7 @@ class Load {
 		if(file_exists(Config::get('path_controller') . $file . EXT)) {
 			require Config::get('path_controller') . $file . EXT;
 			$namespace = 'Controller\\' . ucwords($file);
-			Log::info('Loaded ' . $file . ' controller.');
+			Log::debug('Loaded ' . $file . ' controller.');
 			self::language($file);
 			return new $namespace;
 		}

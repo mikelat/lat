@@ -1,6 +1,6 @@
 <?php namespace Controller;
 
-use Log, Load, Output;
+use Log, Load, Session, Output;
 
 class Controller {
 
@@ -32,6 +32,8 @@ class Controller {
 	 * @return string:
 	 */
 	public function _buffer() {
+		Session::update();
+
 		// load debug info if we're in development
 		if(ENVIRONMENT === 'development') {
 			$this->_debug();

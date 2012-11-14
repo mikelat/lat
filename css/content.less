@@ -62,19 +62,22 @@
 					width: 100%;
 				}
 
-				p.error-msg {
+				span.error-msg {
+					display: block;
 					margin-top: 4px;
 					height: 12px;
 					font-size: @font-size - 2;
-					width: 260px;
+					width: 85%;
 					text-align: right;
 					padding: 0;
 					color: @success;
+					width: 92%;
+					max-width: 450px;
 				}
 				
 				&.error {
 				
-					p.error-msg {
+					span.error-msg {
 						color: @error;
 					}
 
@@ -89,34 +92,12 @@
 				
 				&.ajaxing {
 					
-					p.error-msg {
+					span.error-msg {
 						color: @warning;
 					}
 					
 				}
 			}
-		}
-		
-		label {
-			display: block;
-		}
-		
-		label:after {
-			content: ":";
-		}
-		
-		.validate-required label:after {
-			content: '*:';
-		}
-		
-		.validate-minlength label:after {
-			content: '*:';
-		}
-
-		input:not([type~="checkbox"]):not([type~="hidden"]) {
-			display: block;
-			width: 250px;
-			margin-top:3px;
 		}
 
 		div.error-msg {
@@ -132,6 +113,16 @@
 		& {
 			width: @site-width-tablet;
 		}
+		
+		form {
+			ul {
+				li {
+					span.error-msg {
+						width: 85%;
+					}
+				}
+			}
+		}
 	}
 
 	@media (max-width: @mobile) {
@@ -141,7 +132,16 @@
 		
 		form {
 			ul {
-				padding: 2px;
+				padding: 5px;
+				
+				li {
+					float: none;
+					width: auto;
+					
+					span.error-msg {
+						width: 98%;
+					}
+				}
 			}
 		}
 	}

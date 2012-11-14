@@ -1,56 +1,103 @@
 <?php
 class Session {
-
+	private static $create_session = false;
 	private static $session_data = array();
+	private static $user_data = array();
+	private static $ip_address = "";
+	private static $session_id = "";
 
-	public static function get($name = null) {
-
-		if($name === null) {
+	public static function data($name = null, $value = null) {
+		if($name === null && $value === null) {
 			return static::$session_data;
 		}
+		elseif($name !== null && $value === null) {
+			return isset(static::$session_data[$name]) ? static::$session_data[$name] : null;
+		}
+		elseif($name !== null && $value !== null) {
+			static::$session_data[$name] = $value;
+		}
 
-		return isset(static::$session_data[$name]) ? static::$session_data[$name] : null;
+		return null;
+	}
+
+	public static function user($name = null, $value = null) {
+		if($name === null && $value === null) {
+			return static::$user_data;
+		}
+		elseif($name !== null && $value === null) {
+			return isset(static::$user_data[$name]) ? static::$user_data[$name] : null;
+		}
+		elseif($name !== null && $value !== null) {
+			static::$user_data[$name] = $value;
+		}
+
+		return null;
+	}
+
+	public static function ip_address() {
+		return self::$ip_address;
+	}
+
+	public static function id() {
+		return self::$session_id;
 	}
 
 	public static function load() {
-		self::$session_data['ip_address'] = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
-		$session_id = preg_replace("/[^0-9A-F.]/", "", strtoupper(self::cookie("sid")));
+		$timer = microtime(true);
+		self::$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
+		self::$session_id = preg_replace("/[^0-9A-Z-a-z.]/", "", self::cookie("session_id"));
+		$session_query = false;
 
-
-
-		/*
-		$cookie_sid = $this->get_cookie("sid");
-		$ip = preg_replace("{[^0-9/.]}", "", $_SERVER['REMOTE_ADDR']);
-		$sid = $this->lat->parse->preg_whitelist($cookie_sid, "a-z0-9");
-
-		if($this->lat->cache['config']['bots_on'])
+		// Checking for robots
+		if(Config::get('bots_on'))
 		{
-			$bot_list = explode("\n", $this->lat->cache['config']['bots_list']);
+			$bot_list = explode("\n", Config::get('bots_list'));
 
 			// Compare known bots with our current user agent
 			foreach($bot_list as $bot)
 			{
-				$bot = explode("|", $bot);
+				$bot_info = explode("|", $bot);
 
-				if(preg_match("{{$bot[0]}}i", $_SERVER['HTTP_USER_AGENT']) && $bot != "")
+				if(preg_match("/{$bot[0]}/i", $_SERVER['HTTP_USER_AGENT']) && $bot_info != "")
 				{
-					$this->lat->user['spider'] = $bot[1]."|".$bot[2];
-					$cookie_sid = $sid = substr($bot[1], 0, 10);
+					self::data('spider', $bot_info);
+					self::$session_id = substr($bot[1], 0, 25);
 				}
 			}
 		}
 
-		// Let's hope that we can save one extra query!
-		if($sid)
+		// Attempt to load the current session
+		if(self::id() != "")
 		{
-			// Query: Fetch the session with our user too (we hope) :3
-			$query = array("select" => "s.ip, s.sid, s.key, s.act, s.spider, s.captcha, s.escalated, u.*",
-						   "from"   => "kernel_session s",
-						   "left"   => array("user u ON (s.uid=u.id)"),
-						   "where"  => "s.ip='{$ip}' AND s.sid='{$sid}'");
-
-			$session_query = $this->lat->sql->query($query);
+			$session_query = DB::table('session s')->left_join('user u', 's.user_id=u.user_id')
+				->where(array(
+						's.ip_address' => self::ip_address()
+					,	's.session_id' => self::id()
+					,	's.user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
+				)
+			)->row('s.session_data', 'u.*');
 		}
+
+		if($session_query !== false) {
+			self::$session_data = $session_query['session_data'];
+			unset($session_query['session_data']);
+			self::$user_data = $session_query;
+		}
+		else {
+			// Generate session ID
+			if(self::data('spider') === null) {
+				self::$session_id = String::random_string(25);
+			}
+
+			self::cookie("session_id", self::id());
+			self::$create_session = true;
+		}
+
+		Log::info('Loaded Session: ' . self::id(), microtime(true) - $timer);
+
+		/*
+
+		// Let's hope that we can save one extra query!
 
 		// Old session
 		if($session_query['sid'])
@@ -187,6 +234,32 @@ class Session {
 		*/
 	}
 
+	function update($act="")
+	{
+		if(self::$create_session) {
+			DB::table('session')->insert(array(
+						'session_id' => self::id()
+					,	'ip_address' => self::ip_address()
+					,	'user_id' => 0
+					,	'session_updated' => time()
+					,	'session_created' => time()
+					,	'url_string' => implode('/', Url::get())
+					,	'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
+			));
+		}
+		else {
+			DB::table('session')->set(array(
+						'session_updated' => time()
+					,	'url_string' => implode('/', Url::get())
+				))->update(array(
+						'ip_address' => self::ip_address()
+					,	'session_id' => self::id()
+					,	'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
+				)
+			);
+		}
+	}
+
 	/**
 	 * Returns or sets a cookie
 	 */
@@ -203,8 +276,8 @@ class Session {
 				$expires = time() + 31536000;
 			}
 
-			setcookie($name, $content, $expire, "/");
-			Log::info('Set cookie "' . $name . '" with value: "' . $value . '"');
+			setcookie($name, $content, $expires, "/");
+			Log::info('Set cookie "' . $name . '" with value: "' . $content . '"');
 			return $content;
 		}
 

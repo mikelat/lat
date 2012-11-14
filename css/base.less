@@ -19,13 +19,16 @@ a {
 }
 
 /* Input Types */
-input, textarea, select, .text-block {
+input:not([type~="checkbox"]):not([type~="hidden"]), textarea, select {
 	display: inline-block;
 	height: 20px;
 	padding: 0 3px;
 	line-height: 18px;
 	color: @c3-1;
 	border: 1px solid @c3-1;
+	width: 55%;
+	margin-top:3px;
+	max-width: 300px;
 
 	vertical-align: middle;
 	background-color: #f5f5f5;
@@ -120,5 +123,48 @@ button, a.btn {
 			font-style: italic;
 			.gradient(darken(@c1-4, 15%), darken(@c1-3, 15%));
 		}
+	}
+}
+
+label {
+	float: left;
+	display: block;
+	width: 40%;
+	text-align: right;
+	padding-right: 8px;
+	max-width: 150px;
+	margin-top: 7px;
+}
+
+label:after {
+	content: ":";
+}
+
+.validate-required label:after {
+	content: '*:';
+}
+
+.validate-minlength label:after {
+	content: '*:';
+}
+
+@media (max-width: @tablet) {
+	label { 
+		float: none;
+		width: 100%;
+		text-align: left;
+		margin-top: 0;
+	}
+	
+	input:not([type~="checkbox"]):not([type~="hidden"]), textarea, select {
+		width: 85%;
+		max-width: none;
+	}
+}
+
+@media (max-width: @mobile) {
+	input:not([type~="checkbox"]):not([type~="hidden"]), textarea, select {
+		width: 98%;
+		max-width: none;
 	}
 }

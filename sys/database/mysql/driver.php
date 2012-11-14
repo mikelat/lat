@@ -78,6 +78,13 @@ class Driver {
 
 		$query .= self::prefix($sql['table']);
 
+		// JOINS
+		if(isset($sql['join'])) {
+			foreach($sql['join'] as $join) {
+				$query .= ' ' . $join[0] . ' JOIN ' . self::prefix($join[1]) . ' ON ' . $join[2];
+			}
+		}
+
 		// SET
 		if(isset($sql['set'])) {
 			foreach($sql['set'] as $name => $value) {
@@ -130,7 +137,6 @@ class Driver {
 				$query .= ' (' . implode(", ", $i) .')';
 			}
 		}
-
 
 		return array($query, $data);
 		/*
@@ -230,9 +236,11 @@ class Driver {
 		$where_string = "";
 
 		foreach($where as $n => $w) {
+
 			// nested where
 			if(is_array($w) && is_int($n)) {
 				$where_string .= self::parse_where($w, $data, false);
+
 			}
 			else {
 				// and/or modifier

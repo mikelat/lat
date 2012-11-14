@@ -10,7 +10,7 @@ class Account extends Controller {
 	}
 
 	public function index() {
-
+		Load::view('account/login');
 	}
 
 	public function signup() {
@@ -33,7 +33,7 @@ class Account extends Controller {
 						'email_address' => Form::get('email_address')
 					,	'display_name' => Form::get('display_name')
 					,	'password' => Form::get('password')
-					,	'ip_address' => Session::get('ip_address')
+					,	'ip_address' => Session::ip_address()
 				));
 
 				Url::load('/', "<h3>Thanks for signing up! Login coming soon!</h3><br /><br />");

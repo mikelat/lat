@@ -70,7 +70,9 @@ class Url {
 		// Execute controller and render!
 		$controller->_class('pg-' . strtolower($class));
 		$controller->_class('fn-' . $func);
+		$timer = microtime(true);
 		call_user_func_array(array($controller, $func), $args);
+		Log::info('Executed Controller Method ' . $func . '()', microtime(true) - $timer);
 		call_user_func(array($controller, '_buffer'));
 		call_user_func(array($controller, '_render'));
 	}

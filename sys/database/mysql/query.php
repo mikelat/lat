@@ -61,6 +61,36 @@ class DB extends Driver {
 	}
 
 	/**
+	 * Stores query data for joins
+	 */
+
+	public function left_join() {
+		$args = func_get_args();
+		array_unshift($args, 'LEFT');
+		call_user_func_array(array($this, "join"), $args);
+		return $this;
+	}
+
+	public function right_join() {
+		$args = func_get_args();
+		array_unshift($args, 'RIGHT');
+		call_user_func_array(array($this, "join"), $args);
+		return $this;
+	}
+
+	public function inner_join() {
+		$args = func_get_args();
+		array_unshift($args, 'INNER');
+		call_user_func_array(array($this, "join"), $args);
+		return $this;
+	}
+
+	private function join() {
+		$args = func_get_args();
+		$this->sql['join'][] = $args;
+	}
+
+	/**
 	 * Stores query data for "set"
 	 */
 	public function set() {
@@ -68,10 +98,10 @@ class DB extends Driver {
 
 		// make data into an array if its not passed as one
 		if(count($args) == 2 && !is_array($args[0]) && !is_array($args[1])) {
-			$args = array($args[0] => $args[1]);
+			$args[0] = array($args[0] => $args[1]);
 		}
 
-		$this->sql['set'] = $args;
+		$this->sql['set'] = $args[0];
 
 		return $this;
 	}

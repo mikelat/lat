@@ -4,4 +4,5 @@ $language = array(
 	,	'go' => 'Go'
 	,	'login' => 'Login'
 	,	'signup' => 'Sign up'
+	,	'submit' => 'Submit'
 );

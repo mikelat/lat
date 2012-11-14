@@ -5,7 +5,7 @@ $().ready(function(){
 		var form = $(this).parents('form');
 		
 		$('li.error', form).removeClass('error');
-		$('p.error-msg', form).html('');
+		$('span.error-msg', form).html('');
 		$('div.error-msg', form).remove();
 		$(this).prop('disabled', true);
 
@@ -24,14 +24,14 @@ $().ready(function(){
 							global_error = json[x];
 						}
 						else if(x == '_captcha') {
-							$('#recaptcha_response_field').parents('li').addClass('error').find('p.error-msg').html(language_error('captcha_wrong'));
+							$('#recaptcha_response_field').parents('li').addClass('error').find('span.error-msg').html(language_error('captcha_wrong'));
 							Recaptcha.reload();
 						} 
 						else if(x.charAt(0) != '_') {
 							if(!json[x]['success']) {
 								$('#' + x).parents('li').addClass('error');
 							}
-							$('#' + x).parents('li').find('p.error-msg').html(json[x]['msg']);
+							$('#' + x).parents('li').find('span.error-msg').html(json[x]['msg']);
 						}
 					}
 					$('footer', form).before('<div class="error-msg">' + global_error + '</div>');
@@ -95,13 +95,13 @@ function validate_field(field) {
 		
 	if(r['success'] == false) {
 		clearTimeout(field.data('validate-ajax-timeout'));
-		field.parents('li').removeClass('ajaxing').addClass('error').find('p.error-msg').html(r['msg']);
+		field.parents('li').removeClass('ajaxing').addClass('error').find('span.error-msg').html(r['msg']);
 	} 
 	else {
 		// ajax check field
 		if(field.data('validate-ajax') !== undefined) {
 			if(field.data('validate-ajax-value') !== field.val()) {
-				field.data('validate-ajax-value', field.val()).parents('li').removeClass('error').addClass('ajaxing').find('p.error-msg').html(language_error('_ajax'));
+				field.data('validate-ajax-value', field.val()).parents('li').removeClass('error').addClass('ajaxing').find('span.error-msg').html(language_error('_ajax'));
 				clearTimeout(field.data('validate-ajax-timeout'));
 				field.data('validate-ajax-timeout', setTimeout(function(f) {
 					var post_data = { validate: 1 };
@@ -113,10 +113,10 @@ function validate_field(field) {
 					,	dataType: 'json'
 					,	success: function(json) {
 							if(json[f.attr('id')]['success']) {
-								f.parents('li').removeClass('ajaxing error').find('p.error-msg').html(json[field.attr('id')]['msg']);
+								f.parents('li').removeClass('ajaxing error').find('span.error-msg').html(json[field.attr('id')]['msg']);
 							}
 							else {
-								f.parents('li').removeClass('ajaxing').addClass('error').find('p.error-msg').html(json[field.attr('id')]['msg']);
+								f.parents('li').removeClass('ajaxing').addClass('error').find('span.error-msg').html(json[field.attr('id')]['msg']);
 							}
 						}
 					});
@@ -125,7 +125,7 @@ function validate_field(field) {
 			}			
 		}
 		else {
-			field.parents('li').removeClass('error').find('p.error-msg').html('');
+			field.parents('li').removeClass('error').find('span.error-msg').html('');
 		}
 	}
 	
