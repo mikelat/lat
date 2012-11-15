@@ -82,6 +82,20 @@ class Form {
 	}
 
 	/**
+	 * Outputs a checkbox
+	 *
+	 * @param unknown $name
+	 * @param unknown $label
+	 * @param string $checked
+	 * @return string
+	 */
+	public static function checkbox($name, $label, $checked=false) {
+		$checkbox = '<input type="checkbox" name="' . $name . '" id="' . $name . '"' . ($checked ? ' checked' : '') . ' value="1" />';
+
+		return '<li class="checkbox">' . $checkbox . '<label for="' . $name . '">' . $label . '</label></li>';
+	}
+
+	/**
 	 * Create input from array
 	 *
 	 * @param array $arr
@@ -275,7 +289,7 @@ class Form {
 			}
 		}
 
-		if($return['_success'] == true && self::request_submit()) {
+		if($return['_success'] == true && self::request_submit() && self::$captcha['enabled']) {
 			$return['_captcha'] = self::captcha_is_valid();
 			$return['_success'] = $return['_captcha'];
 		}
@@ -289,12 +303,14 @@ class Form {
 	 * @param array $arr
 	 * @return string
 	 */
-	public static function captcha() {
-		self::$captcha['enabled'] = true;
+	public static function captcha($hidden=false) {
+		if(!$hidden) {
+			self::$captcha['enabled'] = true;
+		}
 		self::$language_buffer['captcha_wrong'] = Load::word('_form', 'captcha_wrong');
 		Load::javascript_var('recaptcha_theme', Config::get('recaptcha_theme'));
 		Load::javascript_var('recaptcha_public', Config::get('recaptcha_public'));
-		return '<li class="validate-minlength captcha"><label>' . Load::word('_form', 'captcha') . '</label><div id="captcha"></div><span class="error-msg"></span></li>';
+		return '<li class="validate-minlength captcha' . ($hidden ? ' dn' : '') . '"><label>' . Load::word('_form', 'captcha') . '</label><div id="captcha"></div><span class="error-msg"></span></li>';
 	}
 
 	/**

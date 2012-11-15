@@ -16,7 +16,6 @@ $().ready(function(){
 		,	dataType: 'json'
 		,	success: function(json) {
 				if(json['_success'] == false) {
-					//console.log(this, $(this));
 					$('button[type=submit]:last', form).prop('disabled', false);
 					var global_error = language_error('_errors');
 					for(var x in json) {
@@ -24,8 +23,17 @@ $().ready(function(){
 							global_error = json[x];
 						}
 						else if(x == '_captcha') {
-							$('#recaptcha_response_field').parents('li').addClass('error').find('span.error-msg').html(language_error('captcha_wrong'));
-							Recaptcha.reload();
+							if(json[x] == false) {
+								$('#recaptcha_response_field').parents('li').addClass('error').find('span.error-msg').html(language_error('captcha_wrong'));
+							}
+							
+							if(!$('#captcha:visible').length) {
+								$('#captcha').parents('li').show();
+								Recaptcha.create(lat['recaptcha_public'], 'captcha', { theme: lat['recaptcha_theme'] });
+							}
+							else {
+								Recaptcha.reload();
+							}
 						} 
 						else if(x.charAt(0) != '_') {
 							if(!json[x]['success']) {
@@ -44,7 +52,7 @@ $().ready(function(){
 		return false;
 	});
 
-	if($('#captcha').length) {
+	if($('#captcha:visible').length) {
 		Recaptcha.create(lat['recaptcha_public'], 'captcha', { theme: lat['recaptcha_theme'] });
 	}
 	

@@ -5,43 +5,77 @@ class Session {
 	private static $user_data = array();
 	private static $ip_address = "";
 	private static $session_id = "";
+	private static $lock_updated = array();
+	private static $lock = array();
 
+	/**
+	 * Sets or returns session data
+	 *
+	 * @param string $name
+	 * @param string $value
+	 * @return multitype:|Ambigous <NULL, multitype:>|NULL
+	 */
 	public static function data($name = null, $value = null) {
 		if($name === null && $value === null) {
-			return static::$session_data;
+			return self::$session_data;
 		}
 		elseif($name !== null && $value === null) {
-			return isset(static::$session_data[$name]) ? static::$session_data[$name] : null;
+			return isset(self::$session_data[$name]) ? self::$session_data[$name] : null;
 		}
 		elseif($name !== null && $value !== null) {
-			static::$session_data[$name] = $value;
+			self::$session_data[$name] = $value;
 		}
 
 		return null;
 	}
 
+	/**
+	 * Returns user data from currently logged in user
+	 *
+	 * @param string $name
+	 * @param string $value
+	 * @return multitype:|Ambigous <NULL, multitype:>|NULL
+	 */
 	public static function user($name = null, $value = null) {
 		if($name === null && $value === null) {
-			return static::$user_data;
+			return self::$user_data;
 		}
 		elseif($name !== null && $value === null) {
-			return isset(static::$user_data[$name]) ? static::$user_data[$name] : null;
+			if($name == 'user_id') {
+				return isset(self::$user_data[$name]) ? self::$user_data[$name] : 0;
+			}
+			else {
+				return isset(self::$user_data[$name]) ? self::$user_data[$name] : null;
+			}
 		}
 		elseif($name !== null && $value !== null) {
-			static::$user_data[$name] = $value;
+			self::$user_data[$name] = $value;
 		}
 
 		return null;
 	}
 
+	/**
+	 * Returns ip address
+	 *
+	 * @return string
+	 */
 	public static function ip_address() {
 		return self::$ip_address;
 	}
 
+	/**
+	 * Returns session id
+	 *
+	 * @return string
+	 */
 	public static function id() {
 		return self::$session_id;
 	}
 
+	/**
+	 * Loads up a session
+	 */
 	public static function load() {
 		$timer = microtime(true);
 		self::$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
@@ -84,6 +118,9 @@ class Session {
 			self::$user_data = $session_query;
 		}
 		else {
+			// Delete hour old sessions
+			DB::shutdown('session')->delete('session_updated <', time() - 3600);
+
 			// Generate session ID
 			if(self::data('spider') === null) {
 				self::$session_id = String::random_string(25);
@@ -234,23 +271,31 @@ class Session {
 		*/
 	}
 
+	/**
+	 * Updates our user session
+	 *
+	 * @param string $act
+	 */
 	function update($act="")
 	{
 		if(self::$create_session) {
-			DB::table('session')->insert(array(
+			DB::shutdown('session')->replace(array(
 						'session_id' => self::id()
 					,	'ip_address' => self::ip_address()
-					,	'user_id' => 0
+					,	'user_id' => self::user('user_id')
 					,	'session_updated' => time()
 					,	'session_created' => time()
 					,	'url_string' => implode('/', Url::get())
 					,	'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
+					,	'session_data' => serialize(self::$session_data)
 			));
 		}
 		else {
-			DB::table('session')->set(array(
+			DB::shutdown('session')->set(array(
 						'session_updated' => time()
 					,	'url_string' => implode('/', Url::get())
+					,	'session_data' => serialize(self::$session_data)
+					,	'user_id' => self::user('user_id')
 				))->update(array(
 						'ip_address' => self::ip_address()
 					,	'session_id' => self::id()
@@ -261,10 +306,14 @@ class Session {
 	}
 
 	/**
-	 * Returns or sets a cookie
+	 * Sets, gets, or removes a cookie
+	 *
+	 * @param string $name
+	 * @param string $content
+	 * @param string $expires
+	 * @return void|unknown|NULL
 	 */
 	public static function cookie($name, $content=null, $expires=null) {
-
 		// Erase Cookie
 		if($content === "") {
 			setcookie($name, "");
@@ -278,7 +327,6 @@ class Session {
 
 			setcookie($name, $content, $expires, "/");
 			Log::info('Set cookie "' . $name . '" with value: "' . $content . '"');
-			return $content;
 		}
 
 		// Return Cookie
@@ -288,5 +336,102 @@ class Session {
 		else {
 			return null;
 		}
+	}
+
+	/**
+	 * Logs in a user
+	 *
+	 * @param string $id
+	 * @param string $password
+	 * @param string $remember
+	 * @return boolean
+	 */
+	function login($user, $remember=false) {
+		self::$user_data = $user;
+
+		if($remember) {
+			$token = unserialize(self::user('token'));
+
+			if(!isset($token['login'])) {
+				$token['login'] = array();
+			}
+
+			// Clean tokens (if it hasn't been used in 30 days consider it dead
+			foreach($token['login'] as $last_used => $t) {
+				if($last_used < time() - 2592000) {
+					unset($token['login'][$last_used]);
+				}
+			}
+
+			$new_token = String::random_string(25);
+			$token['login'][time()] = $new_token;
+			self::$user_data['token'] = serialize($token);
+			self::cookie('user_id', self::user('user_id'));
+			self::cookie('token', $new_token);
+		}
+
+		DB::shutdown('user')->set(array(
+				'user_updated' => time()
+			,	'token' => self::$user_data['token']
+		))->update('user_id', $user['user_id']);
+
+		return true;
+	}
+
+	/**
+	 * Sets or gets the user lock value (helps stop brute force and abuse)
+	 *
+	 * @param string $value
+	 * @return string
+	 */
+	function lock($value=null)
+	{
+		if(!isset(self::$lock[self::ip_address()])) {
+			$lock = DB::table('user_lock')->where(array(
+					'ip_address' => self::ip_address()
+				,	'lock_updated >' => 900
+			))->row('score', 'lock_updated');
+
+			self::$lock[self::ip_address()] = intval($lock['score']);
+			self::$lock_updated[self::ip_address()] = intval($lock['lock_updated']);
+		}
+
+		if($value !== null) {
+			// Delete lock records past the last hour
+			DB::shutdown('user_lock')->delete('lock_updated <', time() - 3600);
+
+			self::$lock[self::ip_address()] = self::$lock[self::ip_address()] + $value;
+
+			if(self::$lock[self::ip_address()] > 255) {
+				self::$lock[self::ip_address()] = 255;
+			}
+
+			DB::shutdown('user_lock')->replace(array(
+					'ip_address' => self::ip_address()
+				,	'lock_updated' => time()
+				,	'score' => self::$lock[self::ip_address()]
+			));
+		}
+
+		return self::$lock[self::ip_address()];
+	}
+
+	/**
+	 * Returns last time the lock was appended to
+	 *
+	 * @param string $ip
+	 * @return number
+	 */
+	function lock_updated($ip) {
+		return isset(self::$lock_updated[$ip]) ? self::$lock_updated[$ip] : 0;
+	}
+
+	/**
+	 * Returns error message for lockout
+	 *
+	 * @return string
+	 */
+	function lock_message() {
+		return Load::word('_form', 'error_lockout', ceil((self::lock_updated(self::ip_address()) + 900 - time()) / 60));
 	}
 }

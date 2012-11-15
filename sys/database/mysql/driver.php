@@ -1,31 +1,45 @@
 <?php
 class Driver {
-
+	private static $shutdown_queries = array();
 	private static $connection = null;
 	protected static $cfg = array();
 
 	/**
 	 * Execute a database query
 	 */
-	public static function query($query, $data=null) {
+	public static function query($query, $data=null, $shutdown=false) {
 		$q = self::$connection->prepare($query);
-
-		if(!$q) {
-			echo 'test';
-
-		}
 
 		$timer = microtime(true);
 		$q->execute($data);
 		$error = $q->errorInfo();
 
 		if($error[0] !== '00000' && ENVIRONMENT === 'development') {
-			Log::halt('Database Query Error: ' . $error[2] . "\n\nQuery Ran: " . $q->queryString);
+			Log::halt("Database Query Error: " . $error[2] . "\n\nQuery Ran: " . $q->queryString);
 		}
 
-		Log::query(str_replace(array_keys($data), array_values( explode(",", '"' . implode('","', $data) . '"') ), $q->queryString), microtime(true) - $timer);
+		if($shutdown === false) {
+			Log::query(str_replace(array_keys($data), array_values( explode("||||", '"' . implode('"||||"', $data) . '"') ), $q->queryString), microtime(true) - $timer);
+		}
 
 		return $q;
+	}
+
+	/**
+	 * Adds a shutdown query
+	 */
+	public static function shutdown_query($query, $data=null) {
+		self::$shutdown_queries[] = array($query, $data);
+		Log::query(str_replace(array_keys($data), array_values( explode("||||", '"' . implode('"||||"', $data) . '"') ), $query));
+	}
+
+	/**
+	 * Execute shutdown queries
+	 */
+	public static function shutdown_exec() {
+		foreach(self::$shutdown_queries as $sq) {
+			self::query($sq[0], $sq[1], true);
+		}
 	}
 
 	/**
@@ -66,7 +80,7 @@ class Driver {
 				$query = "UPDATE ";
 				break;
 			case 'delete':
-				$query = "DELETE ";
+				$query = "DELETE FROM ";
 				break;
 			case 'insert':
 				$query = "INSERT INTO ";
@@ -81,7 +95,7 @@ class Driver {
 		// JOINS
 		if(isset($sql['join'])) {
 			foreach($sql['join'] as $join) {
-				$query .= ' ' . $join[0] . ' JOIN ' . self::prefix($join[1]) . ' ON ' . $join[2];
+				$query .= " " . $join[0] . " JOIN " . self::prefix($join[1]) . " ON " . $join[2];
 			}
 		}
 
@@ -89,7 +103,7 @@ class Driver {
 		if(isset($sql['set'])) {
 			foreach($sql['set'] as $name => $value) {
 				$set[] = $name . "=:v".count($data);
-				$data[":v".count($data)] = $value;
+				$data[':v'.count($data)] = $value;
 			}
 			$query .= " SET " . implode(", ", $set);
 		}
@@ -140,81 +154,6 @@ class Driver {
 
 		return array($query, $data);
 		/*
-
-			// LEFT JOIN
-			if($query['left'])
-			{
-				if(is_array($query['left']))
-				{
-					foreach ($query['left'] as $left_join)
-						$construct .= " LEFT JOIN ".$this->lat->config['SQL_PREF'].$left_join;
-				}
-				else
-				{
-					$construct .= " LEFT JOIN ".$this->lat->config['SQL_PREF'].$query['left'];
-				}
-			}
-
-			// RIGHT JOIN
-			if($query['right'])
-			{
-				if(is_array($query['right']))
-				{
-					foreach ($query['right'] as $right_join)
-						$construct .= " RIGHT JOIN ".$this->lat->config['SQL_PREF'].$right_join;
-				}
-				else
-				{
-					$construct .= " RIGHT JOIN ".$this->lat->config['SQL_PREF'].$query['right'];
-				}
-			}
-
-			// INNER JOIN
-			if($query['inner'])
-			{
-				if(is_array($query['inner']))
-				{
-					foreach ($query['inner'] as $inner_join)
-						$construct .= " INNER JOIN ".$this->lat->config['SQL_PREF'].$inner_join;
-				}
-				else
-				{
-					$construct .= " INNER JOIN ".$this->lat->config['SQL_PREF'].$query['inner'];
-				}
-			}
-
-			// SET
-			if($query['set'])
-			{
-				if(is_array($query['set']))
-				{
-					foreach($query['set'] as $col => $val)
-					{
-						if(substr($col, -1) == "=")
-						{
-							$set[] = $col.$val;
-						}
-						else
-						{
-							if(strpos($val, "'") !== false)
-							{
-								$val = addslashes($val);
-							}
-							$set[] = "{$col}='{$val}'";
-						}
-					}
-					$construct .= " SET ".implode(", ", $set);
-				}
-				else
-				{
-					$construct .= " SET ".$query['set'];
-				}
-			}
-			// WHERE
-			if($query['where'])
-			{
-				$construct .= " WHERE ".$query['where'];
-			}
 			// GROUP BY
 			if($query['group'])
 			{
@@ -255,23 +194,10 @@ class Driver {
 				$where_string .= $n;
 
 				// symbols everywhere
-				if(substr($n, "-1", "1") == ">") {
-					$where_string .= ">";
-				}
-				elseif(substr($n, "-1", "1") == "<") {
-					$where_string .= "<";
-				}
-				elseif(substr($n, "-2", "2") == "<=") {
-					$where_string .= "<=";
-				}
-				elseif(substr($n, "-2", "2") == ">=") {
-					$where_string .= ">=";
-				}
-				elseif(substr($n, "-2", "2") == "!=") {
-					$where_string .= "!=";
-				}
-				else {
+				if(ctype_alpha(substr($n, "-1", "1"))) {
 					$where_string .= "=";
+				} else {
+					$where_string .= " ";
 				}
 
 				$where_string .= ":v".count($data);

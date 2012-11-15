@@ -95,14 +95,22 @@ class Load {
 	 * Returns a word from a language file
 	 *
 	 * @param string $file
+	 * @param string $word
 	 */
 	public static function word($file, $word) {
+		$args = array_slice(func_get_args(), 2);
+
+		// Is there a Plural version of this string?
+		if(isset(self::$lang[$file][$word . '_plural']) && count($args) == 1 && intval($args[0]) == $args[0] && $args[0] != 1) {
+			return vsprintf(self::$lang[$file][$word . '_plural'], $args);
+		}
+
+		// Just output the regular version
 		if(isset(self::$lang[$file][$word])) {
-			return func_num_args() <= 2 ? self::$lang[$file][$word] : vsprintf(self::$lang[$file][$word], array_slice(func_get_args(), 2));
+			return !count($args) ? self::$lang[$file][$word] : vsprintf(self::$lang[$file][$word], $args);
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	/**

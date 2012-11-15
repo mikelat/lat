@@ -58,8 +58,12 @@
 					width: 100%;
 				}
 
-				&.max {
+				&.max, &.checkbox {
 					width: 100%;
+				}
+
+				&.marginl {
+					margin-left: 160px;
 				}
 
 				span.error-msg {
@@ -117,6 +121,10 @@
 		form {
 			ul {
 				li {
+					&.marginl {
+						margin-left: 0;
+					}
+				
 					span.error-msg {
 						width: 85%;
 					}
@@ -135,6 +143,10 @@
 				padding: 5px;
 				
 				li {
+					&.max {
+						text-align: center;
+					}
+				
 					float: none;
 					width: auto;
 					

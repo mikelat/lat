@@ -1,7 +1,7 @@
 <div class="tc">
 <strong>Coded By:</strong> Mike Lat
 <strong class="pl">Version:</strong> <?php echo $version; ?>
-<strong class="pl">Queries Executed:</strong> <?php echo $queries; ?>
+<strong class="pl">Queries Executed:</strong> <?php echo $queries; ?><span style="color: #aaa">+<?php echo $shutdown_queries; ?></span>
 <strong class="pl">Query Time:</strong> <?php echo $query_time; ?>
 <strong class="pl">Exec Time:</strong> <?php echo $exec_time; ?>
 <strong class="pl"><a href="<?php echo Url::make('forum/cache') ?>">force cache reload</a></strong>

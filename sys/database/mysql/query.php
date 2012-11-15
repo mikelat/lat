@@ -5,13 +5,25 @@ class DB extends Driver {
 	private $sql = array();
 
 	/**
-	 * Query builder table selector, additionally returns object
+	 * Query builder table selector, returns db object
 	 */
     public static function table($table)
     {
 		$obj = new self();
 		$obj->sql['table'] = $table;
+    	$obj->sql['shutdown'] = false;
         return $obj;
+    }
+
+    /**
+     * Query builder shutdown, returns db object
+     */
+    public static function shutdown($table)
+    {
+    	$obj = new self();
+    	$obj->sql['table'] = $table;
+    	$obj->sql['shutdown'] = true;
+    	return $obj;
     }
 
 	/**
@@ -107,7 +119,7 @@ class DB extends Driver {
 	}
 
 	/**
-	 * Executes built database query and updates
+	 * Inserting records into db
 	 */
 	public function insert() {
 
@@ -121,33 +133,24 @@ class DB extends Driver {
 		}
 
 		// build and run query
-		$this->sql['type'] = "insert";
+		$this->sql['type'] = isset($this->sql['type']) ? $this->sql['type'] : "insert";
 		$raw_query = $this->build($this->sql);
-		$query = $this->query($raw_query[0], $raw_query[1]);
-	}
 
-	/**
-	 * Executes built database query and updates
-	 */
-	public function replace() {
-
-		$args = func_get_args();
-
-		if(is_array($args[0])) {
-			$this->sql['insert'] = $args[0];
+		if($this->sql['shutdown'] === true) {
+			$this->shutdown_query($raw_query[0], $raw_query[1]);
 		}
 		else {
-			$this->sql['insert'] = $args;
+			return $this->query($raw_query[0], $raw_query[1]);
 		}
+	}
 
-		// build and run query
+	public function replace() {
 		$this->sql['type'] = "replace";
-		$raw_query = $this->build($this->sql);
-		$query = $this->query($raw_query[0], $raw_query[1]);
+		return call_user_func_array(array($this, "insert"), func_get_args());
 	}
 
 	/**
-	 * Executes built database query and updates
+	 * Update a record into the db
 	 */
 	public function update() {
 		// send arguments to where clause
@@ -156,9 +159,23 @@ class DB extends Driver {
 		}
 
 		// build and run query
-		$this->sql['type'] = "update";
+		$this->sql['type'] = isset($this->sql['type']) ? $this->sql['type'] : "update";
 		$raw_query = $this->build($this->sql);
-		$query = $this->query($raw_query[0], $raw_query[1]);
+
+		if($this->sql['shutdown'] === true) {
+			$this->shutdown_query($raw_query[0], $raw_query[1]);
+		}
+		else {
+			return $this->query($raw_query[0], $raw_query[1]);
+		}
+	}
+
+	/**
+	 * Delete a record from the db
+	 */
+	public function delete() {
+		$this->sql['type'] = "delete";
+		return call_user_func_array(array($this, "update"), func_get_args());
 	}
 
 	/**

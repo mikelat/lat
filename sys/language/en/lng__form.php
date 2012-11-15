@@ -2,6 +2,8 @@
 $language = array(
 		'_errors' => 'You have one or more errors on your form. Please fix any mistakes and resubmit.'
 	,	'_ajax' => 'checking...'
+	,	'error_lockout' => 'You\'ve been locked out of submitting this form for %s minute. Please try again later.'
+	,	'error_lockout_plural' => 'You\'ve been locked out of submitting this form for %s minutes. Please try again later.'
 
 	,	'captcha' => 'Captcha'
 

@@ -18,7 +18,14 @@
 					,	'validate' => array('minlength:6', 'regex:password')
 				)); ?>
 
-			<?php //echo Form::captcha(); ?>
+			<?php echo Form::checkbox('remember_me', Load::word('account', 'remember_me')); ?>
+
+			<?php echo Form::captcha((Session::lock() < 50)); ?>
+
+			<li class="max marginl">
+				<a class="btn c2" href="<?php echo Url::make('/account/recover') ?>"><?php echo Load::word('account', 'recover_password') ?></a>
+				<a class="btn c2" href="<?php echo Url::make('/account/resend') ?>"><?php echo Load::word('account', 'resend_activation_email') ?></a>
+			</li>
 
 		</ul>
 		<footer>

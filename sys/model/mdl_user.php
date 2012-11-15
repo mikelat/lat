@@ -7,6 +7,9 @@ class User extends Model {
 	private static $display_name_passed = array();
 	private static $display_name_failed = array();
 
+	private static $email_address_passed = array();
+	private static $email_address_failed = array();
+
 	/**
 	 * Creates user if possible based upon inputted variables
 	 *
@@ -30,6 +33,7 @@ class User extends Model {
 
 		$arr['password_salt'] = String::random_string(10);
 		$arr['password'] = md5($arr['password_salt'] . $arr['password']);
+		$arr['user_created'] = time();
 
 		DB::table('user')->insert($arr);
 	}
@@ -59,6 +63,28 @@ class User extends Model {
 		}
 	}
 
-	private static function generate_salt() {
+	/**
+	 * Checks if email address is avaliable, caches result
+	 *
+	 * @param string $email
+	 * @return boolean
+	 */
+	public static function email_address_avaliable($email) {
+		if(in_array($email, self::$email_address_passed)) {
+			return true;
+		}
+
+		if(in_array($email, self::$email_address_failed)) {
+			return false;
+		}
+
+		if(DB::table('user')->num('email_address', $email)) {
+			self::$email_address_failed[] = $email;
+			return false;
+		}
+		else {
+			self::$email_address_passed[] = $email;
+			return true;
+		}
 	}
 }
