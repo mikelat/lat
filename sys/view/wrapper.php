@@ -12,51 +12,18 @@
 	<!--[if lt IE9]><script>alert('go home and install chrome, i dont support filthy ie');window.location='https://www.google.com/chrome';</script><![endif]-->
 </head>
 <header>
-	<nav id="nav-primary">
-		<ul>
-			<li><a href="<?php echo Url::make() ?>">Forums</a></li>
-			<li><a href="<?php echo Url::make() ?>">Search</a></li>
-			<li><a href="<?php echo Url::make() ?>">Members</a></li>
-		</ul>
-	</nav>
-	<section>
-		<nav id="nav-secondary">
-			<ul>
-				<li><a href="<?php echo Url::make('test') ?>">List</a></li>
-				<li><a href="<?php echo Url::make() ?>">Statistics</a></li>
-				<li><a href="<?php echo Url::make() ?>">Something</a></li>
-				<li id="account">
-					<!-- <div id="user-avatar">
-						<img src="<?php echo Url::make('avatar.png', true) ?>" class="avatar" alt="" />
-					</div> -->
-					<form action="<?php echo Url::make('search') ?>" method="post" id="search">
-						<input type="text" placeholder="<?php echo Load::word('_global', 'search') ?>" />
-						<input type="hidden" name="section" id="search-section" value="" />
-						<a href="#" id="search-button" class="btn c2"><?php echo Load::word('_global', 'go') ?></a>
-					</form>
-					<?php if(!Session::user('user_id')): ?>
-						<a href="<?php echo Url::make('account') ?>" class="btn c1"><?php echo Load::word('_global', 'login') ?></a>
-						<a href="<?php echo Url::make('account/signup') ?>" class="btn c1"><?php echo Load::word('_global', 'signup') ?></a>
-					<?php else: ?>
-						Logged in as: <?php echo Session::user('display_name') ?>
-					<?php endif; ?>
-				</li>
-			</ul>
-		</nav>
-		<h1><a href="<?php echo Url::make() ?>">Lat Forum</a></h1>
-		<div class="cb"></div>
-	</section>
+<?php Load::view('header') ?>
 </header>
 <section id="content">
-<?php echo $html; ?>
+<?php echo $content; ?>
+
 </section>
-<script>var lat = <?php echo json_encode(Load::javascript_var()) ?></script>
+<script>var lat = <?php echo json_encode($jsv) ?></script>
 <script src="<?php echo Url::make('js/jquery.js', true) ?>"></script>
 <script src="<?php echo Url::make('js/init.js', true) ?>"></script>
 <?php if(Config::get('recaptcha_public')) { ?><script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script><?php } ?>
-<script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script>
 <?php
-	foreach(Load::javascript_file() as $jf) {
-		echo '<script src="' . $jf . '"></script>';
+	foreach($jsf as $j) {
+		echo '<script src="' . $j . '"></script>';
 	}
 ?>

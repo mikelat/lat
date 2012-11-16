@@ -1,5 +1,5 @@
 <?php
-class Session {
+class User {
 	private static $create_session = false;
 	private static $session_data = array();
 	private static $user_data = array();
@@ -8,6 +8,10 @@ class Session {
 	private static $lock_updated = array();
 	private static $lock = array();
 
+	/* If you change either of these, current passwords will no longer work! */
+	const hash_cycles = 500; // how many cycles to has the password
+	const hash_algorithm = 'sha512'; // hashing algorithm
+
 	/**
 	 * Sets or returns session data
 	 *
@@ -15,7 +19,7 @@ class Session {
 	 * @param string $value
 	 * @return multitype:|Ambigous <NULL, multitype:>|NULL
 	 */
-	public static function data($name = null, $value = null) {
+	public static function session($name = null, $value = null) {
 		if($name === null && $value === null) {
 			return self::$session_data;
 		}
@@ -34,9 +38,9 @@ class Session {
 	 *
 	 * @param string $name
 	 * @param string $value
-	 * @return multitype:|Ambigous <NULL, multitype:>|NULL
+	 * @return string
 	 */
-	public static function user($name = null, $value = null) {
+	public static function get($name = null, $value = null) {
 		if($name === null && $value === null) {
 			return self::$user_data;
 		}
@@ -69,17 +73,17 @@ class Session {
 	 *
 	 * @return string
 	 */
-	public static function id() {
+	public static function session_id() {
 		return self::$session_id;
 	}
 
 	/**
 	 * Loads up a session
 	 */
-	public static function load() {
+	public static function load_session() {
 		$timer = microtime(true);
 		self::$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
-		self::$session_id = preg_replace("/[^0-9A-Z-a-z.]/", "", self::cookie("session_id"));
+		self::$session_id = self::cookie("session_id");
 		$session_query = false;
 
 		// Checking for robots
@@ -94,19 +98,19 @@ class Session {
 
 				if(preg_match("/{$bot[0]}/i", $_SERVER['HTTP_USER_AGENT']) && $bot_info != "")
 				{
-					self::data('spider', $bot_info);
+					self::session('spider', $bot_info);
 					self::$session_id = substr($bot[1], 0, 25);
 				}
 			}
 		}
 
 		// Attempt to load the current session
-		if(self::id() != "")
+		if(self::session_id() != "")
 		{
 			$session_query = DB::table('session s')->left_join('user u', 's.user_id=u.user_id')
 				->where(array(
 						's.ip_address' => self::ip_address()
-					,	's.session_id' => self::id()
+					,	's.session_id' => self::session_id()
 					,	's.user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
 				)
 			)->row('s.session_data', 'u.*');
@@ -122,153 +126,40 @@ class Session {
 			DB::shutdown('session')->delete('session_updated <', time() - 3600);
 
 			// Generate session ID
-			if(self::data('spider') === null) {
+			if(self::session('spider') === null) {
 				self::$session_id = String::random_string(25);
 			}
 
-			self::cookie("session_id", self::id());
+			$user_id = self::cookie('user_id');
+			$user_token = self::cookie('token');
+
+			Log::debug('Creating session, account details detected: user_id: [' . $user_id . '] user_token: [' . $user_token . ']');
+
+			if($user_id && $user_token) {
+				$user = DB::table('user')->where('user_id', $user_id)->row();
+				$tokens = self::get_tokens('login', @unserialize($user['token']));
+
+				Log::debug($user . ' ' . (in_array($user_token, $tokens['login']) ? 'yes' : 'no') . ' ' . self::lock());
+
+				if($user !== false && in_array($user_token, $tokens['login']) && self::lock() < 250) {
+					self::$user_data['token'] = serialize($tokens);
+					self::login($user);
+
+					Log::debug('Logged in user: ' . $user['user_id']);
+				}
+				else {
+					//self::lock(10);
+					//self::logout();
+
+					Log::debug('Failed login on user: ' . $user['user_id']);
+				}
+			}
+
+			self::cookie("session_id", self::session_id());
 			self::$create_session = true;
 		}
 
-		Log::info('Loaded Session: ' . self::id(), microtime(true) - $timer);
-
-		/*
-
-		// Let's hope that we can save one extra query!
-
-		// Old session
-		if($session_query['sid'])
-		{
-			$this->lat->user = $session_query;
-		}
-		// New session
-		else
-		{
-			// Check password cookie
-			$c_user = $this->lat->parse->unsigned_int($this->get_cookie("user"));
-			$c_pass = $this->get_cookie("pass");
-
-			if($c_user && $c_pass)
-			{
-				// Query: Get the details of the user we want to be
-				$query = array("select" => "u.*",
-							   "from"   => "user u",
-							   "where"  => "u.id=".$c_user);
-
-				$user_fetch = $this->lat->sql->query($query);
-
-				// Check for password attempt abuse
-				$anum = $this->check_abuse($ip);
-
-				// User details are a match!
-				if($user_fetch['pass'] == $c_pass && !$user_fetch['validate'] && $anum != -1)
-				{
-					$this->lat->user = $user_fetch;
-
-					// Query: Delete previous sessions logged in as that user, ip, or old
-					$query = array("delete"   => "kernel_session",
-								   "where"    => "(ip='{$ip}' AND uid=0) OR uid={$c_user} OR last_time < ".(time() - ($this->lat->cache['config']['session_length'] * 60)),
-								   "shutdown" => 1);
-
-					$this->lat->sql->query($query);
-
-					// Query: Update our last login (cookies count as a login)
-					$query = array("update"   => "user",
-								   "set"      => array("last_login" => time()),
-								   "where"    => "id=".$c_user,
-								   "shutdown" => 1);
-
-					$this->lat->sql->query($query);
-				}
-				// Incorrect details
-				else
-				{
-					$c_user = 0;
-					$c_pass = "";
-					$this->out_cookie("user", "", true);
-					$this->out_cookie("pass", "", true);
-					$this->add_abuse();
-				}
-			}
-
-			if(!$this->lat->user['id'])
-			{
-				// Query: Delete other session guests with our IP, or old sessions
-				$query = array("delete"   => "kernel_session",
-							   "where"	  => "(ip='{$ip}' AND uid=0) OR last_time < ".(time() - ($this->lat->cache['config']['session_length'] * 60)));
-
-				$this->lat->sql->query($query);
-			}
-
-			// Generate Standard Key - One that doesn't refresh upon pageloads
-			$this->lat->user['key'] = substr(md5(uniqid(microtime())), 0, 10);
-
-			// Generate session ID
-			if($this->lat->user['spider'])
-			{
-				$this->lat->user['sid'] = $sid;
-			}
-			else
-			{
-				do {
-					$this->lat->user['sid'] = substr(md5(uniqid(microtime())), 0, 10);
-
-					// Query: Check if the session ID already exists
-					$query = array("select" => "count(uid) as num",
-								   "from"   => "kernel_session",
-								   "where"  => "sid='{$this->lat->user['sid']}'");
-
-					$exec = $this->lat->sql->query($query);
-
-				} while ($exec['num']);
-			}
-
-		 	$this->create = true;
-
-			// Attempt to send the sid cookie
-			$cookie_sid = "";
-			$this->out_cookie("sid", $this->lat->user['sid']);
-		}
-
-		// Cookies are disabled, use url sid then :(
-		if($cookie_sid == "")
-		{
-			$this->lat->url = $this->lat->cache['config']['script_url']."index.php?sid={$this->lat->user['sid']};";
-		}
-		else
-		{
-			$this->lat->url = $this->lat->cache['config']['script_url']."index.php?";
-		}
-
-		// Turn null into zero
-		if(!$this->lat->user['id'])
-		{
-			$this->lat->user['id'] = 0;
-		}
-
-		// This user is using default long date format
-		if($this->lat->user['long_date'] == "")
-		{
-			$this->lat->user['long_date'] = $this->lat->cache['config']['long_date'];
-		}
-
-		// This user is using default short date format
-		if($this->lat->user['short_date'] == "")
-		{
-			$this->lat->user['short_date'] = $this->lat->cache['config']['short_date'];
-		}
-
-		$this->lat->user['ip'] = $ip;
-
-		// If there isn't a group, you're a guest!
-		if(!$this->lat->user['gid'])
-		{
-			$this->lat->user['gid'] = 3;
-		}
-
-		// Throw in group permissions in here
-		$this->lat->user['group'] = $this->lat->cache['group'][$this->lat->user['gid']];
-		*/
+		Log::info('Loaded Session: ' . self::session_id(), microtime(true) - $timer);
 	}
 
 	/**
@@ -280,9 +171,9 @@ class Session {
 	{
 		if(self::$create_session) {
 			DB::shutdown('session')->replace(array(
-						'session_id' => self::id()
+						'session_id' => self::session_id()
 					,	'ip_address' => self::ip_address()
-					,	'user_id' => self::user('user_id')
+					,	'user_id' => self::get('user_id')
 					,	'session_updated' => time()
 					,	'session_created' => time()
 					,	'url_string' => implode('/', Url::get())
@@ -295,10 +186,10 @@ class Session {
 						'session_updated' => time()
 					,	'url_string' => implode('/', Url::get())
 					,	'session_data' => serialize(self::$session_data)
-					,	'user_id' => self::user('user_id')
+					,	'user_id' => self::get('user_id')
 				))->update(array(
 						'ip_address' => self::ip_address()
-					,	'session_id' => self::id()
+					,	'session_id' => self::session_id()
 					,	'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
 				)
 			);
@@ -339,34 +230,22 @@ class Session {
 	}
 
 	/**
-	 * Logs in a user
+	 * Login a user (assume correct credientials)
 	 *
 	 * @param string $id
 	 * @param string $password
 	 * @param string $remember
 	 * @return boolean
 	 */
-	function login($user, $remember=false) {
+	public static function login($user, $remember=false) {
 		self::$user_data = $user;
 
 		if($remember) {
-			$token = unserialize(self::user('token'));
-
-			if(!isset($token['login'])) {
-				$token['login'] = array();
-			}
-
-			// Clean tokens (if it hasn't been used in 30 days consider it dead
-			foreach($token['login'] as $last_used => $t) {
-				if($last_used < time() - 2592000) {
-					unset($token['login'][$last_used]);
-				}
-			}
-
-			$new_token = String::random_string(25);
-			$token['login'][time()] = $new_token;
-			self::$user_data['token'] = serialize($token);
-			self::cookie('user_id', self::user('user_id'));
+			$tokens = self::get_tokens();
+			$new_token = String::random_string(20);
+			$tokens['login'][time()] = $new_token;
+			self::$user_data['token'] = serialize($tokens);
+			self::cookie('user_id', self::get('user_id'));
 			self::cookie('token', $new_token);
 		}
 
@@ -379,17 +258,31 @@ class Session {
 	}
 
 	/**
+	 * Logout a user, clear cookies
+	 */
+	public static function logout() {
+		self::$user_data = array();
+
+		// Remove our current token
+		$tokens = self::get_tokens();
+		unset($tokens['login'][array_search(self::cookie('token'), $tokens)]);
+
+		self::cookie('user_id', '');
+		self::cookie('token', '');
+	}
+
+	/**
 	 * Sets or gets the user lock value (helps stop brute force and abuse)
 	 *
 	 * @param string $value
 	 * @return string
 	 */
-	function lock($value=null)
+	public static function lock($value=null)
 	{
 		if(!isset(self::$lock[self::ip_address()])) {
 			$lock = DB::table('user_lock')->where(array(
 					'ip_address' => self::ip_address()
-				,	'lock_updated >' => 900
+				,	'lock_updated >' => time() - 900
 			))->row('score', 'lock_updated');
 
 			self::$lock[self::ip_address()] = intval($lock['score']);
@@ -422,7 +315,7 @@ class Session {
 	 * @param string $ip
 	 * @return number
 	 */
-	function lock_updated($ip) {
+	public static function lock_updated($ip) {
 		return isset(self::$lock_updated[$ip]) ? self::$lock_updated[$ip] : 0;
 	}
 
@@ -431,7 +324,48 @@ class Session {
 	 *
 	 * @return string
 	 */
-	function lock_message() {
+	public static function lock_message() {
 		return Load::word('_form', 'error_lockout', ceil((self::lock_updated(self::ip_address()) + 900 - time()) / 60));
+	}
+
+	/**
+	 * Hashes a password and salt combo
+	 *
+	 * @param string $password
+	 * @param string $salt
+	 * @return string
+	 */
+	public static function hash_password($password, $salt) {
+		$hash = openssl_digest($salt . $password, self::hash_algorithm);
+		for ($i = 0; $i < self::hash_cycles; $i++) {
+			$hash = openssl_digest($hash . $password . $salt, self::hash_algorithm);
+		}
+
+		return $hash;
+	}
+
+	/**
+	 *
+	 * @param array $tokens
+	 * @param string $type
+	 * @return array
+	 */
+	private static function get_tokens($type='login', $tokens=null) {
+		if($tokens === null) {
+			$tokens = @unserialize(self::get('token'));
+		}
+
+		if(!isset($tokens[$type])) {
+			$tokens[$type] = array();
+		}
+
+		// Clean tokens (if it hasn't been used in 30 days consider it dead
+		foreach($tokens[$type] as $last_used => $t) {
+			if($last_used < time() - 2592000) {
+				unset($tokens[$type][$last_used]);
+			}
+		}
+
+		return $tokens;
 	}
 }

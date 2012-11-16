@@ -32,11 +32,12 @@ class Url {
 	 * @param array $extra
 	 * @return string
 	 */
-	public static function load($url='/', $message=null, $extra=array()) {
+	public static function load($url='/', $extra=array()) {
+		Load::init();
+		Controller\Controller::_clear();
 
-		if($message !== null) {
-			Controller\Controller::_clear();
-			echo $message;
+		if(isset($extra['msg'])) {
+			echo $extra['msg'];
 		}
 
 		self::set($url);
@@ -58,7 +59,7 @@ class Url {
 		}
 
 		// Load the controller
-		$controller = Load::controller($class);
+		$controller = Load::controller($class, true);
 
 		// Can't find the controller
 		if($controller === false || !is_callable(array($controller, $func))) {
@@ -74,7 +75,7 @@ class Url {
 		call_user_func_array(array($controller, $func), $args);
 		Log::info('Executed Controller Method ' . $func . '()', microtime(true) - $timer);
 		call_user_func(array($controller, '_buffer'));
-		call_user_func(array($controller, '_render'));
+		call_user_func_array(array($controller, '_render'), array(null, $extra));
 	}
 
 	/**

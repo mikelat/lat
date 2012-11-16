@@ -60,7 +60,7 @@ class Load {
 	 *
 	 * @param string $file
 	 */
-	public static function controller($file) {
+	public static function controller($file, $test=false) {
 
 		// Invalid name for a controller
 		if(!preg_match("/^[a-z][a-z_]*/", $file)) {
@@ -68,7 +68,7 @@ class Load {
 		}
 
 		if(file_exists(Config::get('path_controller') . $file . EXT)) {
-			require Config::get('path_controller') . $file . EXT;
+			require_once Config::get('path_controller') . $file . EXT;
 			$namespace = 'Controller\\' . ucwords($file);
 			Log::debug('Loaded ' . $file . ' controller.');
 			self::language($file);
@@ -156,5 +156,16 @@ class Load {
 		else {
 			return self::$js_var;
 		}
+	}
+
+	/**
+	 * Cleans internal arrays like new
+	 */
+	public static function init() {
+		self::$js_var = array();
+		self::$js_file = array();
+
+		// Add default JS url var
+		Load::javascript_var('url', Config::get('url'));
 	}
 }

@@ -334,7 +334,7 @@ class Form {
 		$host = parse_url(static::recaptcha_server, PHP_URL_HOST);
 
 		// Prepare data for sending
-		$data = 'privatekey=' . Config::get('recaptcha_private') . '&remoteip=' . Session::ip_address();
+		$data = 'privatekey=' . Config::get('recaptcha_private') . '&remoteip=' . User::ip_address();
 		$data .= '&challenge=' . urlencode(stripslashes($_POST['recaptcha_challenge_field']));
 		$data .= '&response=' . urlencode(stripslashes($_POST['recaptcha_response_field']));
 

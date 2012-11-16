@@ -4,14 +4,6 @@
 
 		<ul>
 			<?php echo Form::input(array(
-						'label' => Load::word('account', 'email_address')
-					,	'type' => 'email'
-					,	'name' => 'email_address'
-					,	'validate' => array('maxlength:255', 'minlength:1', 'regex:email')
-					,	'autofocus' => 'autofocus'
-				)); ?>
-
-			<?php echo Form::input(array(
 						'label' => Load::word('account', 'display_name')
 					,	'name' => 'display_name'
 					,	'validate' => array('maxlength:25', 'minlength:2', 'ajax')

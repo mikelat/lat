@@ -4,11 +4,9 @@
 
 		<ul>
 			<?php echo Form::input(array(
-						'label' => Load::word('account', 'email_address')
-					,	'type' => 'email'
-					,	'name' => 'email_address'
-					,	'validate' => array('maxlength:255', 'minlength:1', 'regex:email')
-					,	'autofocus' => 'autofocus'
+						'label' => Load::word('account', 'display_name')
+					,	'name' => 'display_name'
+					,	'validate' => array('maxlength:25', 'minlength:2')
 				)); ?>
 
 			<?php echo Form::input(array(
@@ -20,11 +18,10 @@
 
 			<?php echo Form::checkbox('remember_me', Load::word('account', 'remember_me')); ?>
 
-			<?php echo Form::captcha((Session::lock() < 50)); ?>
+			<?php echo Form::captcha((User::lock() < 50)); ?>
 
 			<li class="max marginl">
 				<a class="btn c2" href="<?php echo Url::make('/account/recover') ?>"><?php echo Load::word('account', 'recover_password') ?></a>
-				<a class="btn c2" href="<?php echo Url::make('/account/resend') ?>"><?php echo Load::word('account', 'resend_activation_email') ?></a>
 			</li>
 
 		</ul>

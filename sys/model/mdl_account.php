@@ -1,8 +1,8 @@
 <?php namespace Model;
 
-use DB, Form, String, Load;
+use DB, Form, String, User, Load;
 
-class User extends Model {
+class Account extends Model {
 
 	private static $display_name_passed = array();
 	private static $display_name_failed = array();
@@ -23,16 +23,13 @@ class User extends Model {
 			return false;
 		}
 
-		if(!isset($arr['email_address']) || !preg_match(Form::regex('email'), $arr['email_address'])) {
-			return false;
-		}
-
 		if(!isset($arr['password'])) {
 			return false;
 		}
 
-		$arr['password_salt'] = String::random_string(10);
-		$arr['password'] = md5($arr['password_salt'] . $arr['password']);
+		$arr['display_name'] = trim($arr['display_name']);
+		$arr['password_salt'] = String::random_string(15);
+		$arr['password'] = User::hash_password($arr['password'], $arr['password_salt']);
 		$arr['user_created'] = time();
 
 		DB::table('user')->insert($arr);
@@ -45,6 +42,8 @@ class User extends Model {
 	 * @return boolean
 	 */
 	public static function display_name_avaliable($name) {
+		$name = trim($name);
+
 		if(in_array($name, self::$display_name_passed)) {
 			return true;
 		}

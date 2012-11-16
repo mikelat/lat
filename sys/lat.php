@@ -25,22 +25,19 @@ DB::load($sql_cfg);
 unset($sql_cfg);
 
 // Default Libraries
-Load::library('session');
 Load::library('string');
 Load::library('cache');
+Load::library('user');
 Load::library('url');
 
 // Set defaults for libraries
-Session::load();
+User::load_session();
 Cache::load();
 
 // Guess the base url
 if(Config::get('url') == "") {
 	Config::import('url', (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http') . '://'. $_SERVER['HTTP_HOST'] . str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']));
 }
-
-// Add default JS files
-Load::javascript_var('url', Config::get('url'));
 
 //DB::table('configuration')->set('option_value', 1)->update('option_name', 'bots_enabled', 'faf');
 //$var = DB::table('session')->limit(1)->row('user_id', 'session_id');

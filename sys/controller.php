@@ -1,6 +1,6 @@
 <?php namespace Controller;
 
-use Log, Load, Session, DB, Output;
+use Log, Load, User, DB, Output;
 
 class Controller {
 
@@ -32,7 +32,7 @@ class Controller {
 	 * @return string:
 	 */
 	public function _buffer() {
-		Session::update();
+		User::update();
 
 		// load debug info if we're in development
 		if(ENVIRONMENT === 'development') {
@@ -49,7 +49,7 @@ class Controller {
 	 *
 	 * @param string $html
 	 */
-	public function _render($html=null) {
+	public function _render($html=null, $extra=array()) {
 		ob_end_clean();
 		ob_start('ob_gzhandler');
 
@@ -63,23 +63,36 @@ class Controller {
 
 		// Standard render since nothing was passed
 		if($html === null) {
+
+			if(User::get('user_id')) {
+				$this->_global_classes[] = 'user-' . User::get('user_id');
+				$this->_global_classes[] = 'logged-in';
+			}
+			else {
+				$this->_global_classes[] = 'logged-out';
+			}
+
 			$classes = implode(" ", $this->_global_classes);
 
-			// send back as json array
-			if(isset($_POST['json']) && $_POST['json']) {
-				echo json_encode(array(
+			$output = array(
 						'content' => $this->_html_buffer
 					,	'classes' => $classes
 					,	'jsf' => Load::javascript_file()
-					,	'jsv' => Load::javascript_var()));
+					,	'jsv' => Load::javascript_var()
+			);
+
+			if(is_array($extra)) {
+				$output = array_merge($output, $extra);
+			}
+
+			// send back as json array
+			if(isset($_POST['json']) && $_POST['json']) {
+				echo json_encode($output);
 			}
 
 			// just output to the browser
 			else {
-				echo Load::view('wrapper', array(
-						'html' => $this->_html_buffer
-					,	'classes' => $classes
-				));
+				echo Load::view('wrapper', $output);
 			}
 		}
 		// This was called directly and therefore is overriding the default render output
@@ -116,6 +129,7 @@ class Controller {
 			,	'shutdown_queries' => Log::$query_shutdown
 			,	'query_time' => number_format(Log::$query_time, 5) . "s"
 			,	'exec_time' => number_format(microtime(true) - TIMER, 5) . "s"
+			,	'memory' => memory_get_peak_usage()
 		));
 	}
 }

@@ -113,6 +113,12 @@ class DB extends Driver {
 			$args[0] = array($args[0] => $args[1]);
 		}
 
+		foreach($args[0] as $id => $a) {
+			if(is_array($a)) {
+				$args[0][$id] = @serialize($a);
+			}
+		}
+
 		$this->sql['set'] = $args[0];
 
 		return $this;

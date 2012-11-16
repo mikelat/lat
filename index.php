@@ -3,7 +3,7 @@
 define('TIMER', microtime(true));
 
 // Software version
-define("VERSION", "0.0.1 dev");
+define("VERSION", "pre-alpha");
 
 // File extention
 define('EXT', '.php');

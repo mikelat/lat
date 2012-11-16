@@ -17,4 +17,9 @@ class Forum extends Controller {
 			echo "You don't have permissions for this.";
 		}
 	}
+
+	public function delay() {
+		usleep(2000000);
+		echo "This page render was delayed by 2 seconds on purpose for testing purposes to emulate a long page load.";
+	}
 }

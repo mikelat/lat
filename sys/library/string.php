@@ -24,10 +24,11 @@ class String {
 	 * @return string
 	 */
 	public static function random_string($length=5) {
-		$characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+		$characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()_+-=~;:<>,.?{}[]';
+		$char_len = strlen($characters) - 1;
 		$result = '';
 		for ($i = 0; $i < $length; $i++) {
-			$result .= $characters[mt_rand(0, 61)];
+			$result .= $characters[mt_rand(0, $char_len)];
 		}
 		return $result;
 	}
