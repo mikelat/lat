@@ -1,11 +1,25 @@
 <?php namespace Controller;
 
-use Cache, Load;
+use Cache, Load, Model\Forum as Forum;
 
-class Forum extends Controller {
+class C_Forum extends Controller {
 
-	public function index() {
-		Load::view('forum/list');
+	public function __construct() {
+		Load::model('forum');
+	}
+
+	public function index() {//var_dump(Cache::get('forum'));
+		$forums = Cache::get('forum');
+		$forums_parent = array();
+
+		if(!empty($forums)) {
+			foreach($forums as $f) {
+				$forums_parent[$f['parent']][] = $f;
+			}
+		}
+
+		//echo serialize(array('sql' => array( 'table' => 'forum', 'type' => 'select', 'select' => '*' ), 'slug' => 'slug'));
+		Load::view('forum/list', array('forums_parent' => $forums_parent));
 	}
 
 	public function cache() {

@@ -18,7 +18,7 @@
 
 			<?php echo Form::checkbox('remember_me', Load::word('account', 'remember_me')); ?>
 
-			<?php echo Form::captcha((User::lock() < 50)); ?>
+			<?php echo Form::captcha((User::lock() < 100)); ?>
 
 			<li class="max marginl">
 				<a class="btn c2" href="<?php echo Url::make('/account/recover') ?>"><?php echo Load::word('account', 'recover_password') ?></a>

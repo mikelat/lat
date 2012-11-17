@@ -17,7 +17,7 @@ class User {
 	 *
 	 * @param string $name
 	 * @param string $value
-	 * @return multitype:|Ambigous <NULL, multitype:>|NULL
+	 * @return string
 	 */
 	public static function session($name = null, $value = null) {
 		if($name === null && $value === null) {
@@ -137,19 +137,19 @@ class User {
 
 			if($user_id && $user_token) {
 				$user = DB::table('user')->where('user_id', $user_id)->row();
-				$tokens = self::get_tokens('login', @unserialize($user['token']));
+				$tokens = self::get_tokens('login', @unserialize($user['tokens']));
 
 				Log::debug($user . ' ' . (in_array($user_token, $tokens['login']) ? 'yes' : 'no') . ' ' . self::lock());
 
 				if($user !== false && in_array($user_token, $tokens['login']) && self::lock() < 250) {
-					self::$user_data['token'] = serialize($tokens);
+					self::$user_data['tokens'] = serialize($tokens);
 					self::login($user);
 
 					Log::debug('Logged in user: ' . $user['user_id']);
 				}
 				else {
-					//self::lock(10);
-					//self::logout();
+					self::lock(20);
+					self::logout();
 
 					Log::debug('Failed login on user: ' . $user['user_id']);
 				}
@@ -202,7 +202,7 @@ class User {
 	 * @param string $name
 	 * @param string $content
 	 * @param string $expires
-	 * @return void|unknown|NULL
+	 * @return string
 	 */
 	public static function cookie($name, $content=null, $expires=null) {
 		// Erase Cookie
@@ -244,14 +244,14 @@ class User {
 			$tokens = self::get_tokens();
 			$new_token = String::random_string(20);
 			$tokens['login'][time()] = $new_token;
-			self::$user_data['token'] = serialize($tokens);
+			self::$user_data['tokens'] = serialize($tokens);
 			self::cookie('user_id', self::get('user_id'));
 			self::cookie('token', $new_token);
 		}
 
 		DB::shutdown('user')->set(array(
 				'user_updated' => time()
-			,	'token' => self::$user_data['token']
+			,	'tokens' => self::$user_data['tokens']
 		))->update('user_id', $user['user_id']);
 
 		return true;
@@ -352,7 +352,7 @@ class User {
 	 */
 	private static function get_tokens($type='login', $tokens=null) {
 		if($tokens === null) {
-			$tokens = @unserialize(self::get('token'));
+			$tokens = @unserialize(self::get('tokens'));
 		}
 
 		if(!isset($tokens[$type])) {

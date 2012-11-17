@@ -18,14 +18,22 @@ a {
 	}
 }
 
+h2,h3,h4,h5,h6 {
+	font-family: 'Share Tech', sans-serif;
+}
+
+h3,h4,h5,h6 {
+	font-weight: normal;
+}
+
 /* Input Types */
 input:not([type~="checkbox"]):not([type~="hidden"]), textarea, select {
 	display: inline-block;
-	padding: 0 3px;
+	padding: 1px 3px;
 	line-height: 18px;
 	color: @c3-1;
 	border: 1px solid @c3-1;
-	margin-top:3px;
+	font-size: @font-size;
 
 	vertical-align: middle;
 	background-color: #f5f5f5;
@@ -39,7 +47,7 @@ input:not([type~="checkbox"]):not([type~="hidden"]), textarea, select {
 
 input:not([type~="checkbox"]):not([type~="hidden"]) {
 	height: 20px;
-	width: 55%;
+	width: 54%;
 	max-width: 390px;
 }
 
@@ -61,6 +69,11 @@ select {
 	padding: 2px;
 }
 
+time {
+	white-space: nowrap;
+	font-style: italic;
+}
+
 button, a.btn {
 	font-family: @font;
 	color: @c3-2;
@@ -80,7 +93,7 @@ button, a.btn {
 	box-sizing:border-box;
 	-moz-box-sizing:border-box; /* Firefox */
 	-webkit-box-sizing:border-box; /* Safari */
-	margin: 2px 1px;
+	margin: 2px 3px;
 
 	.border-radius(4px);
 	.gradient(@w, #e6e6e6);

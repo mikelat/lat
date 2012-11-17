@@ -23,14 +23,62 @@
 	h2 {
 		color: @w;
 		font-size: 20px;
+		font-weight: 800;
 		position: relative;
 		line-height: 30px;
 		height: 30px;
 		text-indent:20px;
 		.border-radius(9px 9px 0 0);
 		.gradient(@c1-3, @c1-2);
-		text-indent:20px;
 		border: 1px solid @c1-2;
+	}
+	
+	h3 {
+		font-size: 18px;
+		.gradient(@c3-1, @c3-3);
+		padding: 5px 0 5px 10px;
+		
+		&, a {
+			color: @c1-3;
+		}
+	}
+	
+	.big {
+		text-align: right;
+	
+		h4 {
+			float: left;
+			margin-right: 10px;
+			
+			&, a {
+				font-size: 24px;
+				color: @c2-2;
+			}
+		}
+				
+		.last-activity {
+			display: inline-block;
+			width: 250px;
+			text-align: center;
+			font-size: 12px;
+		}
+		
+		.statistics {
+			display: inline-block;
+			width: 120px;
+			text-align: center;
+			font-size: 12px;
+			white-space: nowrap;
+			
+			span {
+				display: block;
+			}
+		}
+		
+		li {
+			border-top: 1px solid @c1-2;
+			padding: 5px 5px 5px 20px;
+		}
 	}
 	
 	#captcha {
@@ -74,12 +122,11 @@
 					margin-top: 4px;
 					height: 12px;
 					font-size: @font-size - 2;
-					width: 85%;
+					width: 97%;
 					text-align: right;
 					padding: 0;
 					color: @success;
-					width: 92%;
-					max-width: 450px;
+					max-width: 400px;
 				}
 				
 				&.error {
@@ -121,16 +168,12 @@
 			ul {
 				li {
 					width: 50%;
-					}
 				}
 			}
+		}
 	}
 	
-
-	@media (max-width: @tablet) {
-		& {
-			width: @site-width-tablet;
-		}
+	@media (max-width: @form-2col) {
 		
 		form {
 			ul {
@@ -143,9 +186,40 @@
 					}
 				
 					span.error-msg {
-						width: 85%;
+						width: 88%;
 					}
 				}
+			}
+		}
+	}
+	
+
+	@media (max-width: @tablet) {
+		& {
+			width: @site-width-tablet;
+		}
+		
+		.big {
+		
+			.last-activity, .statistics {
+				display: inline;
+				text-align: center;
+				padding-top: 1px;
+				
+				span {
+					display: inline;
+				}
+				.threads:after {
+					content: " - ";
+				}
+			}
+			
+			.statistics {
+				//margin-left: 100px;
+			}
+			
+			li {
+				padding: 2px 2px 2px 20px;
 			}
 		}
 	}
@@ -153,6 +227,38 @@
 	@media (max-width: @mobile) {
 		& {
 			width: @site-width-phone;
+		}
+		
+		.big {
+			h4 {
+				display: block;
+				float: none;
+				text-align: center;
+				margin-right: 0px;
+			}
+			
+			.last-activity, .statistics {
+				display: block;
+				width: 100%;
+				float: none;
+				text-align: center;
+				padding-top: 5px;
+				
+				span {
+					display: inline;
+				}
+				.threads:after {
+					content: " - ";
+				}
+			}
+			
+			.statistics {
+				margin-left: 0;
+			}
+			
+			li {
+				padding: 2px;
+			}
 		}
 		
 		form {
@@ -169,6 +275,7 @@
 					
 					span.error-msg {
 						width: 98%;
+						max-width: none;
 					}
 				}
 			}

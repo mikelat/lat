@@ -1,8 +1,8 @@
 <?php namespace Controller;
 
-use Load, Form, Url, DB, User, Model\Account as Model_Account;
+use Load, Form, Url, DB, User, Model\Account;
 
-class Account extends Controller {
+class C_Account extends Controller {
 
 	public function __construct() {
 		Load::model('account');
@@ -43,7 +43,7 @@ class Account extends Controller {
 					User::lock(10);
 
 					// Add captcha if we've used up our 5 chances
-					if(User::lock() >= 50) {
+					if(User::lock() >= 100) {
 						$validate['_captcha'] = true;
 					}
 				}
@@ -70,7 +70,7 @@ class Account extends Controller {
 
 			// Check if display name is taken
 			if($display_name) {
-				$dn_avaliable = Model_Account::display_name_avaliable($display_name);
+				$dn_avaliable = Account::display_name_avaliable($display_name);
 				$validate['display_name']['msg'] = $dn_avaliable ? Load::word('account', 'good_name', $display_name) : Load::word('account', 'bad_name', $display_name);
 				$validate['display_name']['success'] = $dn_avaliable;
 				$validate['_success'] = $dn_avaliable ? $validate['_success'] : false;
@@ -93,7 +93,7 @@ class Account extends Controller {
 			*/
 
 			if($validate['_success'] && Form::request_submit()) {
-				Model_Account::create(array(
+				Account::create(array(
 						'display_name' => $display_name
 					,	'password' => Form::get('password')
 					,	'ip_address' => User::ip_address()

@@ -1,4 +1,13 @@
 <?php
+// Show errors if we're development
+if(ENVIRONMENT == "development") {
+	error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+	ini_set('display_errors', 'On');
+}
+
+// Grab our root configuration file
+require(ROOT . 'cfg' . EXT);
+
 // Load configuration libary and import what we have
 require $cfg['path_library'] . 'config' . EXT;
 Config::import($cfg);
@@ -39,8 +48,5 @@ if(Config::get('url') == "") {
 	Config::import('url', (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http') . '://'. $_SERVER['HTTP_HOST'] . str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']));
 }
 
-//DB::table('configuration')->set('option_value', 1)->update('option_name', 'bots_enabled', 'faf');
-//$var = DB::table('session')->limit(1)->row('user_id', 'session_id');
-//echo serialize(array('sql' => array( 'table' => 'configuration', 'type' => 'select', 'select' => 'config_name, config_value', )));
-
+// Load the requested page
 Url::load($_SERVER['REQUEST_URI']);

@@ -4,47 +4,74 @@ class Cache {
 
 	private static $raw_cache = array();
 	private static $cache = array();
+	private static $slugs = array();
 
+	/**
+	 * Grabs stored cache (unserializes if necessary)
+	 *
+	 * @return string|array
+	 */
 	public static function get() {
 		$args = func_get_args();
 
+		// we found it but it hasn't been unserialized
+		if(isset(static::$raw_cache[$args[0]]) && !isset(static::$cache[$args[0]])) {
+			self::$cache[$args[0]] = unserialize(self::$raw_cache[$args[0]]['content']);
+		}
 		// can't find the cache you're looking for
-		if(!isset(static::$raw_cache[$args[0]])) {
+		elseif(!isset(static::$raw_cache[$args[0]])) {
 			return null;
 		}
 
-		// we found it but it hasn't been unserialized
-		if(isset(static::$raw_cache[$args[0]]) && !isset(static::$cache[$args[0]])) {
-			self::$cache[$args[0]] = unserialize(self::$raw_cache[$args[0]]['cache_content']);
+		if(func_num_args() > 1) {
+			return static::$cache[$args[0]][$args[1]];
 		}
-
-		$cache =& static::$cache[$args[0]];
-
-		// more than one argument means we're returning something very specific
-		if(count($args) > 1) {
-			array_shift($args);
-			foreach($args as $a)
-			{
-				$cache =& $cache[$a];
-			}
+		else {
+			return static::$cache[$args[0]];
 		}
-
-		return $cache;
 	}
 
 	/**
-	 * Load all cache as raw for storage
+	 * Grabs stored cache (unserializes if necessary)
+	 *
+	 * @return string|array
+	 */
+	public static function slugs() {
+		$args = func_get_args();
+
+		// we found it but it hasn't been unserialized
+		if(isset(static::$raw_cache[$args[0]]) && !isset(static::$slugs[$args[0]])) {
+			self::$slugs[$args[0]] = unserialize(self::$raw_cache[$args[0]]['slugs']);
+		}
+		// can't find the cache you're looking for
+		elseif(!isset(static::$raw_cache[$args[0]])) {
+			return null;
+		}
+
+		if(func_num_args() > 1) {
+			return static::$slugs[$args[0]][$args[1]];
+		}
+		else {
+			return static::$slugs[$args[0]];
+		}
+	}
+
+	/**
+	 * Loads up all the caches
 	 */
 	public static function load() {
-		 foreach(DB::table('cache')->get() as $query) {
-		 	self::$raw_cache[$query['cache_name']] = $query;
-		 }
+		foreach(DB::table('cache')->get() as $query) {
+			self::$raw_cache[$query['name']] = $query;
+		}
 
-		 Config::import(self::get('configuration'));
+		Config::import(self::get('configuration'));
 	}
 
 	/**
-	 * Reload a cache (or all of them)
+	 * Reloads a cache, serializes and updates entry in DB
+	 *
+	 * @param string $name
+	 * @return boolean
 	 */
 	public static function reload($name=null) {
 		// We're updating everything
@@ -57,13 +84,13 @@ class Cache {
 			return false;
 		}
 
-		$cache_data = unserialize(self::$raw_cache[$name]['cache_query']);
+		$cache_data = unserialize(self::$raw_cache[$name]['query']);
 		$build = DB::build($cache_data['sql']);
 		$query = DB::query($build[0], $build[1])->fetchAll(\PDO::FETCH_ASSOC);
-		$new_cache = array();
+		$new_cache = $new_slugs = array();
 
 		// 2 columns means its a key
-		if(!empty($query)) {
+		if($query) {
 			if(count($query[0]) === 2) {
 				foreach($query as $q) {
 					$new_cache[reset($q)] = end($q);
@@ -72,7 +99,16 @@ class Cache {
 			else {
 				// If no array id is set use the first column grabbed from the query
 				if(!isset($cache_data['array_id'])) {
-					$cache_data['array_id'] = key($query[0][0]);
+					$cache_data['array_id'] = key($query[0]);
+				}
+
+				// Set slugs if set
+				if(isset($cache_data['slug'])) {
+					foreach($query as $q) {
+						if($q[$cache_data['slug']] != '') {
+							$new_slugs[$q[$cache_data['slug']]] = $q[$cache_data['array_id']];
+						}
+					}
 				}
 
 				foreach($query as $q) {
@@ -82,20 +118,9 @@ class Cache {
 		}
 
 		// Update our cache in a query
+		self::$slugs[$name] = $new_slugs;
 		self::$cache[$name] = $new_cache;
-		DB::table('cache')->set('cache_content', serialize($new_cache))->update('cache_name', $name);
+		DB::shutdown('cache')->set(array('content' => serialize($new_cache), 'slugs' => serialize($new_slugs)))->update('name', $name);
 		return true;
-	}
-
-	/**
-	 * Used for configuration cache reloading, to make underscores into arrays
-	 */
-	private static function set_configuration_cache(&$cache, $key, $value) {
-		if(count($key) > 1) {
-			return self::set_configuration_cache($cache[array_shift($key)], $key, $value);
-		}
-		else {
-			return $cache[$key[0]] = $value;
-		}
 	}
 }

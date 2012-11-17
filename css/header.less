@@ -2,7 +2,7 @@ header {
 	.box-shadow(0px, 5px, 30px);
 	.gradient(#e1e2e3, #d5d6d7, 80);
 	border-bottom: 1px solid @c1-4;
-	font-size: @font-size + 1;
+	font-size: @font-size + 2;
 
 	nav li {
 		display: inline-block;
@@ -17,7 +17,7 @@ header {
 		ul {
 			margin: 0px auto;
 			width: @site-width;
-			line-height: 15px;
+			font-size: @font-size + 2;
 			padding: 4px 0;
 
 			li {
@@ -82,11 +82,11 @@ header {
 		float: right;
 		margin: 2px 0 2px 2px;
 		padding: 2px;
-		width: 50px;
+		width: 60px;
 		font-size: 0;
 		img {
-			max-height: 50px;
-			max-width: 50px;
+			max-height: 55px;
+			max-width: 55px;
 		}
 	}
 	
@@ -94,6 +94,7 @@ header {
 	#search {
 		display: block;
 		white-space: nowrap;
+		margin-bottom: 3px;
 		
 		input[type=text] {
 			width: 100px;
@@ -110,11 +111,12 @@ header {
 			width: @site-width-tablet;
 		}
 		#user-avatar {
-			margin-top: 28px;
-			width: 20px;
+			margin-top: 30px;
+			width: 25px;
+			
 			img {
-				max-height: 20px;
-				max-width: 20px;
+				max-height: 25px;
+				max-width: 25px;
 			}
 		}
 		#account {
@@ -154,14 +156,13 @@ header {
 		}
 
 		#user-avatar {
-			margin-top: 0;
 			float: left;
-			width: 20px;
-			margin-left: 50px;
-			margin-right: 2px;
+			width: 25px;
+			margin: 0 0 0 50px;
+			
 			img {
-				max-height: 20px;
-				max-width: 20px;
+				max-height: 25px;
+				max-width: 25px;
 			}
 		}
 
@@ -187,11 +188,16 @@ header {
 				float: none;
 				padding-bottom: 40px;
 				text-align: left;
+				margin-top: 5px;
 				
 				&:before {
 					content: "";
 				}
 			}
+		}
+		
+		#search {
+			display: none;
 		}
 		
 		#search * {

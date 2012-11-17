@@ -56,18 +56,5 @@ foreach($enviroment as $env => $host) {
 define('ENVIRONMENT', $current_enviroment);
 unset($enviroment, $current_enviroment); // cleanup enviroment vars
 
-// Show errors if we're development
-if(ENVIRONMENT == "development") {
-	error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
-	ini_set('display_errors', 'On');
-
-	// Grab configruation outside of git :)
-	require(ROOT . '../cfg' . EXT);
-}
-else {
-	// Grab our root configuration file
-	require(ROOT . 'cfg' . EXT);
-}
-
 // Load lat core
 require SYS . 'lat' . EXT;
