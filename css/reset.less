@@ -62,7 +62,8 @@ article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{di
 
 #debug{background: white; z-index:9002;position:fixed;bottom:0;left:0;padding:5px;font-size:12px;line-height:15px;
 	span{display:none}
-	@media (min-width: @desktop_minimum) { #in_desktop { display: inline; } }
+	@media (min-width: @highres_minimum) { #in_highres { display: inline; } }
+	@media (min-width: @desktop_minimum)  and (max-width: @desktop) { #in_desktop { display: inline; } }
 	@media (min-width: @tablet_minimum) and (max-width: @tablet) { #in_tablet { display: inline; } }
 	@media (max-width: @mobile) { #in_mobile { display: inline; } }
 }

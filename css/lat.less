@@ -27,17 +27,21 @@
 
 @font: "Helvetica Neue", Helvetica, Arial, sans-serif;
 @font-size: 14px;
-@site-width: 80%;
-@site-width-tablet: 90%;
+
+@site-width-highres: 86%;
+@site-width-desktop: 92%;
+@site-width-tablet: 95%;
 @site-width-phone: 98%;
 
-@tablet: 800px;
-@mobile: 480px;
-@form-3col: 1400px; // resolution to switch forms to 3col
-@form-2col: 970px; // resolution to switch forms to 2cols
+@desktop: 1400px;
+@tablet: 970px;
+@mobile: 500px;
 
+@highres_minimum: @desktop + 1px;
 @desktop_minimum: @tablet + 1px;
 @tablet_minimum: @mobile + 1px;
+
+@background: #f0f0f1;
 
 /* Functions */
 .gradient (@c1, @c2, @s1:0, @s2:100) {

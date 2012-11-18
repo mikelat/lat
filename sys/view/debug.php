@@ -12,6 +12,7 @@
 </div>
 <div id="debug">
 	<a href="#" onclick="$('#debug_data').toggle(); return false;">debug</a>
+	<span id="in_highres">[highres]</span>
 	<span id="in_desktop">[desktop]</span>
 	<span id="in_tablet">[tablet]</span>
 	<span id="in_mobile">[mobile]</span>

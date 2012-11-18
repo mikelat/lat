@@ -117,7 +117,7 @@ class User {
 		}
 
 		if($session_query !== false) {
-			self::$session_data = $session_query['session_data'];
+			self::$session_data = unserialize($session_query['session_data']);
 			unset($session_query['session_data']);
 			self::$user_data = $session_query;
 		}

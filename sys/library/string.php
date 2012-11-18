@@ -32,4 +32,14 @@ class String {
 		}
 		return $result;
 	}
+
+	/**
+	 * Return a random string of letters/numbers
+	 *
+	 * @param number $length
+	 * @return string
+	 */
+	public static function number_format($number) {
+		return number_format($number);
+	}
 }

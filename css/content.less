@@ -1,7 +1,5 @@
 #content {
-	//min-width: ;
-	width: @site-width;
-	//width: 960px;
+	width: @site-width-highres;
 	margin: 20px auto;
 
 
@@ -25,7 +23,7 @@
 		font-size: 20px;
 		font-weight: 800;
 		position: relative;
-		line-height: 30px;
+		line-height: 33px;
 		height: 30px;
 		text-indent:20px;
 		.border-radius(9px 9px 0 0);
@@ -39,12 +37,14 @@
 		padding: 5px 0 5px 10px;
 		
 		&, a {
-			color: @c1-3;
+			color: @c1-4;
 		}
 	}
 	
 	.big {
 		text-align: right;
+		font-size: 0;
+		margin: 2px 0 0 2px;
 	
 		h4 {
 			float: left;
@@ -57,18 +57,19 @@
 		}
 				
 		.last-activity {
+			float: right;
 			display: inline-block;
-			width: 250px;
+			width: 240px;
 			text-align: center;
 			font-size: 12px;
 		}
 		
 		.statistics {
-			display: inline-block;
+			float: right;
 			width: 120px;
 			text-align: center;
 			font-size: 12px;
-			white-space: nowrap;
+			//white-space: nowrap;
 			
 			span {
 				display: block;
@@ -76,8 +77,19 @@
 		}
 		
 		li {
-			border-top: 1px solid @c1-2;
-			padding: 5px 5px 5px 20px;
+			.cell {
+				margin: 0px 2px 2px 0;
+				padding: 3px;
+				background: @background;
+			}
+		
+			width: 50%;
+			float: left;
+
+			&:nth-child(even) {
+				//border-left: 1px solid @c1-2;
+				//border-style: inset;
+			}
 		}
 	}
 	
@@ -163,7 +175,10 @@
 		}
 	}
 	
-	@media (max-width: @form-3col) {
+	@media (max-width: @desktop) {
+		& {
+			width: @site-width-desktop;
+		}
 		form {
 			ul {
 				li {
@@ -171,23 +186,21 @@
 				}
 			}
 		}
-	}
-	
-	@media (max-width: @form-2col) {
 		
-		form {
-			ul {
-				li {
-					width: 50%;
-					min-width: none;
+		.big {
+		
+			.last-activity, .statistics { 
+				width: 250px;
+			}
+		
+			.statistics {
+				clear: right;
 				
-					&.marginl {
-						margin-left: 0;
-					}
-				
-					span.error-msg {
-						width: 88%;
-					}
+				.threads:after {
+					content: " - ";
+				}
+				span {
+					display: inline;
 				}
 			}
 		}
@@ -219,7 +232,25 @@
 			}
 			
 			li {
-				padding: 2px 2px 2px 20px;
+				width: 100%;
+				//padding: 2px 2px 2px 20px;
+			}
+		}
+		
+		form {
+			ul {
+				li {
+					width: 50%;
+					min-width: none;
+				
+					&.marginl {
+						margin-left: 0;
+					}
+				
+					span.error-msg {
+						width: 88%;
+					}
+				}
 			}
 		}
 	}
@@ -257,7 +288,7 @@
 			}
 			
 			li {
-				padding: 2px;
+				float: none;
 			}
 		}
 		

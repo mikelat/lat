@@ -32,11 +32,11 @@ class Cache {
 	}
 
 	/**
-	 * Grabs stored cache (unserializes if necessary)
+	 * Grabs stored slug (unserializes if necessary)
 	 *
 	 * @return string|array
 	 */
-	public static function slugs() {
+	public static function slug() {
 		$args = func_get_args();
 
 		// we found it but it hasn't been unserialized
