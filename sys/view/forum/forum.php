@@ -1,7 +1,3 @@
-<?php foreach ($forums_parent[$id] as $root_forum): ?>
-	<h3><?php echo Model\Forum::link($root_forum) ?></h3>
-	<ul class="big">
-<?php foreach($forums_parent[$root_forum['forum_id']] as $forum): ?>
 		<li>
 			<div class="cell">
 				<h4><?php echo Model\Forum::link($forum) ?></h4>
@@ -16,7 +12,3 @@
 				<div class="cb"></div>
 			</div>
 		</li>
-<?php endforeach; ?>
-	</ul>
-	<div class="cb"></div>
-<?php endforeach; ?>

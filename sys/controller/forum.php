@@ -1,6 +1,6 @@
 <?php namespace Controller;
 
-use Cache, Load, User, Model\Forum as Forum;
+use Cache, Load, User, DB, Model\Forum as Forum;
 
 class C_Forum extends Controller {
 
@@ -23,6 +23,10 @@ class C_Forum extends Controller {
 	public function view($slug) {
 		$id = Cache::slug('forum', $slug);
 
+		$threads = DB::table('thread')->where(array(
+				'forum_id' => $id
+		))->get();
+
 		Load::view('forum/thread_list', array(
 				'forum_list' => self::forum_list($id)
 			,	'forum' => Cache::get('forum', $id)
@@ -44,14 +48,12 @@ class C_Forum extends Controller {
 			foreach($forums as $f) {
 				$forums_parent[$f['parent']][] = $f;
 			}
-/*
+
 			if($id > 0) {
 				$forums_parent = isset($forums_parent[$id]) ? $forums_parent[$id] : '';
 			}
-*/
-			if(isset($forums_parent[$id])) {
-				return Load::view('forum/forum_list', array('forums_parent' => $forums_parent, 'id' => $id), true);
-			}
+
+			return $forums_parent;
 		}
 
 		return '';
