@@ -1,16 +1,16 @@
 <?php namespace Controller;
 
-use Load, Form, Url, DB, User, Model\Account;
+use Load, Form, Url, DB, User, Model\Member;
 
 class C_Account extends Controller {
 
 	public function __construct() {
-		Load::model('account');
+		Load::model('member');
 		Load::library('form');
 	}
 
 	public function index() {
-		if(!User::get('user_id')) {
+		if(!User::get('member_id')) {
 			Url::load('/account/login');
 		}
 
@@ -22,22 +22,22 @@ class C_Account extends Controller {
 
 		if(Form::request_submit()) {
 			$validate = Form::is_valid();
-			$user = DB::table('user')->where('display_name', Form::get('display_name'))->row();
+			$member = DB::table('member')->where('display_name', Form::get('display_name'))->row();
 
 			// 25 failed attempts = complete lockout
 			if(User::lock() >= 250 && $validate['_success']) {
-					$validate['_msg'] = User::lock_message();
-					$validate['_success'] = false;
+				$validate['_msg'] = User::lock_message();
+				$validate['_success'] = false;
 			}
 
-			if($user === false && $validate['_success']) {
+			if($member === false && $validate['_success']) {
 				$validate['_msg'] = Load::word('account', 'error_display_name_not_found');
 				$validate['_success'] = false;
 			}
 
 			if($validate['_success']) {
 
-				if(User::hash_password(Form::get('password'), $user['password_salt']) !== $user['password']) {
+				if(User::hash_password(Form::get('password'), $member['password_salt']) !== $member['password']) {
 					$validate['_msg'] = Load::word('account', 'error_login');
 					$validate['_success'] = false;
 					User::lock(10);
@@ -51,7 +51,7 @@ class C_Account extends Controller {
 
 			// Successful login!
 			if($validate['_success']) {
-				User::login($user, Form::get('remember_me'));
+				User::login($member, Form::get('remember_me'));
 				Url::load('/', array('msg' => "<h3>Wow!! That was a successful login!!!</h3><br /><br />", 'header' => Load::view('header', null, true)));
 			}
 			else {
@@ -93,7 +93,7 @@ class C_Account extends Controller {
 			*/
 
 			if($validate['_success'] && Form::request_submit()) {
-				Account::create(array(
+				Member::create(array(
 						'display_name' => $display_name
 					,	'password' => Form::get('password')
 					,	'ip_address' => User::ip_address()

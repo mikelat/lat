@@ -63,9 +63,11 @@ class Load {
 	public static function controller($file, $test=false) {
 
 		// Invalid name for a controller
-		if(!preg_match("/^[a-z][a-z_]*/", $file)) {
+		if(!preg_match("/^[a-z][a-z-_]*/", $file)) {
 			return false;
 		}
+
+		$file = str_replace('-', '_', $file);
 
 		if(file_exists(Config::get('path_controller') . $file . EXT)) {
 			require_once Config::get('path_controller') . $file . EXT;

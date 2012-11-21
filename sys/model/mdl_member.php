@@ -1,8 +1,8 @@
 <?php namespace Model;
 
-use DB, Form, String, User, Load;
+use DB, Form, String, User, Url, Load;
 
-class Account extends Model {
+class Member extends Model {
 
 	private static $display_name_passed = array();
 	private static $display_name_failed = array();

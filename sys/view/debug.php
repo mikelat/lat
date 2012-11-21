@@ -25,7 +25,7 @@
 	</li>
 	<?php foreach ($log as $l) {
 		echo '<li class="debug-' . $l[0] . '"><strong>[' . strtoupper($l[0]) . ']</strong> '
-	 	. $l[1] . ($l[2] > 0 ? ' <em>(executed in '.number_format($l[2], 6). 's)</em></li>' : '</li>');
+	 	. String::html_encode($l[1]) . ($l[2] > 0 ? ' <em>(executed in '.number_format($l[2], 6). 's)</em></li>' : '</li>');
 	} ?>
 
 </ul>

@@ -64,8 +64,8 @@ class Controller {
 		// Standard render since nothing was passed
 		if($html === null) {
 
-			if(User::get('user_id')) {
-				$this->_global_classes[] = 'user-' . User::get('user_id');
+			if(User::get('member_id')) {
+				$this->_global_classes[] = 'member-' . User::get('member_id');
 				$this->_global_classes[] = 'logged-in';
 			}
 			else {

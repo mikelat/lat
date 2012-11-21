@@ -46,12 +46,16 @@ class Url {
 		$args = array_slice(self::get(), 2);
 
 		$page_found = false;
-		if($class == null) {
+		if($class == null || !preg_match("/^[a-z][a-z-]*/", $class)) {
 			$class = 'forum'; // TODO: replace this later with actual configuration option
 		}
 
-		// Determine if we're using index
-		if($func == null || !preg_match("/^[a-z][a-z_]*/", $func)) {
+		// Starts with number, its a view func
+		if(preg_match("/^[0-9]+-.+/", $func)) {
+			$func = 'view';
+		}
+		// Assume index if not valid or
+		elseif($func == null || !preg_match("/^[a-z][a-z-]*/", $func)) {
 			$func = 'index';
 		}
 		else {
@@ -72,6 +76,7 @@ class Url {
 		$controller->_class('pg-' . strtolower($class));
 		$controller->_class('fn-' . $func);
 		$timer = microtime(true);
+		$func = str_replace('-', '_', $func);
 		call_user_func_array(array($controller, $func), $args);
 		Log::info('Executed Controller Method ' . $func . '()', microtime(true) - $timer);
 		call_user_func(array($controller, '_buffer'));
@@ -97,6 +102,23 @@ class Url {
 		}
 
 		return Config::get('url') . $url;
+	}
+
+
+	public static function make_slug($type, $arr, $prefix='') {
+		if($prefix !== '') {
+			$prefix = $prefix . '_' . $type . '_';
+			$id = $prefix . 'id';
+		}
+		else {
+			$id = $type . '_id';
+		}
+
+
+		return '<a class="url-' . $type . '-' . $arr[$id] . '" '
+			. 'href="' . Url::make($type . '/' . $arr[$id] . '-' . $arr[$prefix . 'slug'])
+			. (isset($arr[$prefix . 'description']) ? '" title="' . $arr[$prefix . 'description'] : '')
+			. '">' . $arr[$prefix . 'name'] . '</a>';
 	}
 
 	/**

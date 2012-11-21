@@ -41,7 +41,7 @@
 		}
 	}
 	
-	.big {
+	.forum-list {
 		text-align: right;
 		font-size: 0;
 		margin: 2px 0 0 2px;
@@ -69,7 +69,7 @@
 			width: 120px;
 			text-align: center;
 			font-size: 12px;
-			//white-space: nowrap;
+			overflow: hidden;
 			
 			span {
 				display: block;
@@ -77,22 +77,23 @@
 		}
 		
 		li {
-			.cell {
-				margin: 0px 2px 2px 0;
-				padding: 3px;
-				background: @background;
-			}
-		
 			width: 50%;
 			float: left;
-
-			&:nth-child(even) {
-				//border-left: 1px solid @c1-2;
-				//border-style: inset;
-			}
 		}
 	}
 	
+	.thread-list {
+		li {
+			width: 100%;
+		}
+	}
+	
+	.cell {
+		margin: 0px 2px 2px 0;
+		padding: 3px;
+		background: @background;
+	}
+		
 	#captcha {
 		overflow: auto;
 	}
@@ -187,7 +188,7 @@
 			}
 		}
 		
-		.big {
+		.forum-list {
 		
 			.last-activity, .statistics { 
 				width: 250px;
@@ -212,7 +213,7 @@
 			width: @site-width-tablet;
 		}
 		
-		.big {
+		.forum-list {
 		
 			.last-activity, .statistics {
 				display: inline;
@@ -227,13 +228,8 @@
 				}
 			}
 			
-			.statistics {
-				//margin-left: 100px;
-			}
-			
 			li {
 				width: 100%;
-				//padding: 2px 2px 2px 20px;
 			}
 		}
 		
@@ -260,7 +256,7 @@
 			width: @site-width-phone;
 		}
 		
-		.big {
+		.forum-list {
 			h4 {
 				display: block;
 				float: none;

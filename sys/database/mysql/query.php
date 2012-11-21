@@ -112,6 +112,11 @@ class DB extends Driver {
 		if(count($args) == 2 && !is_array($args[0]) && !is_array($args[1])) {
 			$args[0] = array($args[0] => $args[1]);
 		}
+		elseif(count($args) > 1) {
+			foreach($args as $a) {
+				$args[0] = array_merge($args[0], $a);
+			}
+		}
 
 		foreach($args[0] as $id => $a) {
 			if(is_array($a)) {

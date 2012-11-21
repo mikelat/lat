@@ -39,14 +39,8 @@ Load::library('cache');
 Load::library('user');
 Load::library('url');
 
-// Set defaults for libraries
+// Load up session
 User::load_session();
-Cache::load();
-
-// Guess the base url
-if(Config::get('url') == "") {
-	Config::import('url', (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off' ? 'https' : 'http') . '://'. $_SERVER['HTTP_HOST'] . str_replace(basename($_SERVER['SCRIPT_NAME']), '', $_SERVER['SCRIPT_NAME']));
-}
 
 // Load the requested page
 Url::load($_SERVER['REQUEST_URI']);

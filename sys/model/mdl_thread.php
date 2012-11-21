@@ -2,6 +2,6 @@
 
 Use Url;
 
-class Forum extends Model {
+class Thread extends Model {
 
 }

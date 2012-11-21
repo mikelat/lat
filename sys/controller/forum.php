@@ -1,18 +1,17 @@
 <?php namespace Controller;
 
-use Cache, Load, User, DB, Model\Forum as Forum;
+use Cache, Load, String, DB;
 
 class C_Forum extends Controller {
 
 	public function __construct() {
-		Load::model('forum');
 	}
 
 	/**
 	 * View forum index.
 	 */
 	public function index() {
-		Load::view('forum/index', array('forums' => self::forum_list()));
+		Load::view('forum/index', array('forum_list' => self::forum_list()));
 	}
 
 	/**
@@ -21,7 +20,7 @@ class C_Forum extends Controller {
 	 * @param string $slug
 	 */
 	public function view($slug) {
-		$id = Cache::slug('forum', $slug);
+		$id = String::slug_id($slug);
 
 		$threads = DB::table('thread')->where(array(
 				'forum_id' => $id
@@ -30,6 +29,7 @@ class C_Forum extends Controller {
 		Load::view('forum/thread_list', array(
 				'forum_list' => self::forum_list($id)
 			,	'forum' => Cache::get('forum', $id)
+			,	'thread_list' => $threads
 		));
 	}
 
@@ -39,7 +39,7 @@ class C_Forum extends Controller {
 	 * @param number $id
 	 * @return string
 	 */
-	private function forum_list ($id=0) {
+	private function forum_list($id=0) {
 		$forums = Cache::get('forum');
 
 		if(!empty($forums)) {
@@ -56,9 +56,12 @@ class C_Forum extends Controller {
 			return $forums_parent;
 		}
 
-		return '';
+		return null;
 	}
 
+	/**
+	 * Reload the cache (temporary for development)
+	 */
 	public function cache() {
 		if(ENVIRONMENT === 'development' && $_SERVER['REMOTE_ADDR'] == '192.168.1.1') {
 			Cache::reload();
@@ -69,6 +72,9 @@ class C_Forum extends Controller {
 		}
 	}
 
+	/**
+	 * Delay the page load with usleep (temporary for development)
+	 */
 	public function delay() {
 		usleep(2000000);
 		echo "This page render was delayed by 2 seconds on purpose for testing purposes to emulate a long page load.";

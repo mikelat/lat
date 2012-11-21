@@ -14,7 +14,6 @@ class String {
 		else {
 			return htmlspecialchars($val);
 		}
-
 	}
 
 	/**
@@ -31,6 +30,19 @@ class String {
 			$result .= $characters[mt_rand(0, $char_len)];
 		}
 		return $result;
+	}
+
+	/**
+	 * Get specified slug id
+	 *
+	 * @param number $segment
+	 * @return string
+	 */
+	public static function slug_id($string) {
+		if(preg_match('/([0-9]+)-.+/', $string, $matches)) {
+			return $matches[1];
+		}
+		return null;
 	}
 
 	/**
