@@ -41,35 +41,75 @@
 		}
 	}
 	
-	.forum-list {
-		text-align: right;
+	.content-list {
+		ol {
+		
+		}
+	}
+		
+	.avatar {
+		border: 1px solid @c3-4;
+		background-color: #f0f0f1;
+		padding: 2px;
 		font-size: 0;
+		
+		img{
+			max-height: 100px;
+			max-width: 100px;
+		}
+	}
+	
+	.forum-list {
 		margin: 2px 0 0 2px;
+		
+		.cell {
+			position: relative;
+		}
 	
 		h4 {
 			float: left;
-			margin-right: 10px;
+			margin: 5px 0 5px 10px;
 			
 			&, a {
 				font-size: 24px;
 				color: @c2-2;
 			}
 		}
+		
+		.avatar {
+			position: absolute; 
+			right: 155px;
+			float: right;
+			
+			img {
+				max-width: 30px;
+				max-height: 30px;
+			}
+		}
 				
 		.last-activity {
+			position: absolute; 
+			right: 0;
 			float: right;
-			display: inline-block;
-			width: 240px;
-			text-align: center;
+			display: block;
+			text-align: left;
 			font-size: 12px;
+			width: 150px;
+			overflow: hidden;
+			
+			time {
+				display: block;
+			}
 		}
 		
 		.statistics {
+			position: absolute; 
+			right: 195px;
+			width: 150px;
 			float: right;
-			width: 120px;
-			text-align: center;
 			font-size: 12px;
-			overflow: hidden;
+			text-align: right;
+			padding: 5px 0;
 			
 			span {
 				display: block;
@@ -83,6 +123,11 @@
 	}
 	
 	.thread-list {
+		.statistics {
+			width: 120px;
+			float: right;
+		}
+	
 		li {
 			width: 100%;
 		}
@@ -190,20 +235,10 @@
 		
 		.forum-list {
 		
-			.last-activity, .statistics { 
-				width: 250px;
+			li {
+				width: 100%;
 			}
 		
-			.statistics {
-				clear: right;
-				
-				.threads:after {
-					content: " - ";
-				}
-				span {
-					display: inline;
-				}
-			}
 		}
 	}
 	
@@ -214,23 +249,24 @@
 		}
 		
 		.forum-list {
+			h4 {
+				margin: 0 0 10px 10px;
+			}
 		
-			.last-activity, .statistics {
-				display: inline;
-				text-align: center;
-				padding-top: 1px;
-				
-				span {
-					display: inline;
-				}
-				.threads:after {
+			 .statistics {
+				padding: 0 0 0 15px;
+			 	text-align: left;
+			 	bottom: 0; 
+			 	left: 0;
+			 	width: auto;
+			 	span {
+			 		display: inline;
+			 	}
+			 	
+			 	.threads:after {
 					content: " - ";
 				}
-			}
-			
-			li {
-				width: 100%;
-			}
+			 }
 		}
 		
 		form {
@@ -261,30 +297,37 @@
 				display: block;
 				float: none;
 				text-align: center;
-				margin-right: 0px;
+				margin: 0;
 			}
 			
-			.last-activity, .statistics {
-				display: block;
-				width: 100%;
-				float: none;
-				text-align: center;
-				padding-top: 5px;
-				
-				span {
-					display: inline;
-				}
-				.threads:after {
-					content: " - ";
-				}
-			}
-			
-			.statistics {
-				margin-left: 0;
+			 .statistics, .last-activity {
+			 	//display: none;
 			}
 			
 			li {
 				float: none;
+			}
+			
+			.avatar {
+				display: none;
+			}
+					
+			.last-activity {
+
+				time {
+					display: inline;
+				}
+			}
+			
+			.statistics, .last-activity {
+				position: static;
+				width: auto;
+				float: none;
+				display: block;
+				font-size: 12px;
+				text-align: center;
+				padding: 0;
+				
 			}
 		}
 		
