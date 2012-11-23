@@ -4,7 +4,8 @@ $.ajaxSetup({cache: false});
 
 $().ready(function(){
 	init();
-	
+	//var offset = new Date().getTimezoneOffset() * -1;
+
 	// delay popstate so it doesn't fire immediately
 	window.setTimeout(function() {
 		$(window).bind('popstate', function(){

@@ -54,4 +54,39 @@ class String {
 	public static function number_format($number) {
 		return number_format($number);
 	}
+
+	/**
+	 * Outputs a formatted date string with time tags
+	 *
+	 * @param number $time
+	 * @param string $long
+	 * @return string
+	 */
+	public static function time_format($time=0, $long=false)
+	{
+		$now = time();
+		$date = '';
+
+		// No time was given
+		if(!$time) {
+			$time = $now;
+		}
+
+		if(gmdate("dmy", $now) == gmdate("dmy", $time)) {
+			$date = Load::word('_global', 'date_today', date('g:ia', $time));
+		}
+		// Yesterday!
+		elseif(gmdate("dmy", $now - 86400) == gmdate("dmy",$time)) {
+			$date = Load::word('_global', 'date_yesterday', date('g:ia', $time));
+		}
+		// Tommorow!
+		elseif(gmdate("dmy", $now + 86400) == gmdate("dmy",$time)) {
+			$date = Load::word('_global', 'date_tommorow', date('g:ia', $time));
+		}
+		else {
+			$date = date('Y-m-d g:ia', $time);
+		}
+
+		return '<time datetime="' . gmdate("Y-m-d H:i", $now) . 'Z">' . $date . '</time>';
+	}
 }

@@ -49,7 +49,7 @@
 		
 	.avatar {
 		border: 1px solid @c3-4;
-		background-color: #f0f0f1;
+		background-color: @w; //#f0f0f1
 		padding: 2px;
 		font-size: 0;
 		
@@ -59,16 +59,51 @@
 		}
 	}
 	
-	.forum-list {
+	.content-list {
 		margin: 2px 0 0 2px;
-		
-		.cell {
-			position: relative;
+
+		.avatar {
+			position: absolute;
+			float: right;
+			top: 2px;
+			
+			img {
+				max-width: 25px;
+				max-height: 25px;
+			}
 		}
+		
+		.statistics, .last-activity {
+			top: 4px;
+			position: absolute;
+			font-size: 12px;
+			float: right;
+			line-height: 14px;
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+				
+		.last-activity {
+			right: 0;
+			text-align: left;
+			width: 210px;
+		}
+		
+		.statistics {
+			text-align: right;
+			
+			span {
+				display: block;
+			}
+		}
+	}
+	
+	.forum-list {
 	
 		h4 {
 			float: left;
-			margin: 5px 0 5px 10px;
+			margin: 2px 0 2px 10px;
 			
 			&, a {
 				font-size: 24px;
@@ -77,43 +112,16 @@
 		}
 		
 		.avatar {
-			position: absolute; 
-			right: 155px;
-			float: right;
-			
-			img {
-				max-width: 30px;
-				max-height: 30px;
-			}
+			right: 215px;
 		}
 				
 		.last-activity {
-			position: absolute; 
-			right: 0;
-			float: right;
-			display: block;
-			text-align: left;
-			font-size: 12px;
-			width: 150px;
-			overflow: hidden;
-			
-			time {
-				display: block;
-			}
+			width: 210px;
 		}
 		
 		.statistics {
-			position: absolute; 
-			right: 195px;
+			right: 253px;
 			width: 150px;
-			float: right;
-			font-size: 12px;
-			text-align: right;
-			padding: 5px 0;
-			
-			span {
-				display: block;
-			}
 		}
 		
 		li {
@@ -123,9 +131,25 @@
 	}
 	
 	.thread-list {
+		.avatar {
+			right: 155px;
+		}
+				
+		.last-activity {
+			width: 150px;
+			
+			time {
+				display: block;
+			}
+		}
+		.started-by {
+			float: left;
+			padding-top: 2px;
+			font-size: 11px;
+		}
 		.statistics {
-			width: 120px;
-			float: right;
+			right: 193px;
+			width: 150px;
 		}
 	
 		li {
@@ -137,6 +161,7 @@
 		margin: 0px 2px 2px 0;
 		padding: 3px;
 		background: @background;
+		position: relative;
 	}
 		
 	#captcha {
@@ -248,25 +273,58 @@
 			width: @site-width-tablet;
 		}
 		
-		.forum-list {
-			h4 {
-				margin: 0 0 10px 10px;
-			}
-		
-			 .statistics {
-				padding: 0 0 0 15px;
-			 	text-align: left;
-			 	bottom: 0; 
-			 	left: 0;
+		.content-list {
+			.statistics {
 			 	width: auto;
+			 	font-size: 11px;
+		 		width: auto;
+		 		top: auto;
+			 	text-align: left;
+			 	
 			 	span {
 			 		display: inline;
 			 	}
+			}
+		}
+		
+		.forum-list {
+			h4 {
+				margin: 0 0 9px 5px;
+				font-size: 18px;
+				a {
+					font-size: 18px;
+				}
+			}
+		
+			 .statistics {
+				padding: 0 0 0 8px;
+			 	bottom: 0;
+			 	left: 0;
 			 	
 			 	.threads:after {
 					content: " - ";
 				}
 			 }
+		}
+		
+		.thread-list {
+			.started-by {
+		 		display: none;
+			}
+		
+			.statistics {
+				position: static;
+				float: left;
+				clear: left;
+				
+			 	span {
+			 		display: inline;
+			 	}
+			 	
+			 	.replies:after {
+					content: " - ";
+				}
+			}
 		}
 		
 		form {
@@ -301,7 +359,7 @@
 			}
 			
 			 .statistics, .last-activity {
-			 	//display: none;
+				padding-top: 0px;
 			}
 			
 			li {
@@ -313,7 +371,6 @@
 			}
 					
 			.last-activity {
-
 				time {
 					display: inline;
 				}
@@ -324,10 +381,45 @@
 				width: auto;
 				float: none;
 				display: block;
-				font-size: 12px;
+				font-size: 11px;
 				text-align: center;
 				padding: 0;
-				
+			}
+		}
+		
+		.thread-list {
+			.thread-title {
+				display: block;
+				float: none;
+				text-align: center;
+			}
+			
+			.statistics, .last-activity {
+				padding-top: 0px;
+			}
+			
+			li {
+				float: none;
+			}
+			
+			.avatar {
+				display: none;
+			}
+					
+			.last-activity {
+				time {
+					display: inline;
+				}
+			}
+			
+			.statistics, .last-activity {
+				position: static;
+				width: auto;
+				float: none;
+				display: block;
+				font-size: 11px;
+				text-align: center;
+				padding: 0;
 			}
 		}
 		

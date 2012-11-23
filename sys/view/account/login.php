@@ -6,7 +6,7 @@
 			<?php echo Form::input(array(
 						'label' => Load::word('account', 'display_name')
 					,	'name' => 'display_name'
-					,	'validate' => array('maxlength:25', 'minlength:2')
+					,	'validate' => array('maxlength:15', 'minlength:2')
 				)); ?>
 
 			<?php echo Form::input(array(
