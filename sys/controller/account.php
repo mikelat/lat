@@ -17,6 +17,22 @@ class C_Account extends Controller {
 		Load::view('account/account');
 	}
 
+    public function timezone() {
+        DB::table('session')->set('time_offset', Form::get('timezone'))->update(array(
+                    'ip_address' => User::ip_address()
+                ,   'session_id' => User::session_id()
+                ,   'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
+            )
+        );
+        
+        if(User::get('member_id')) {
+            DB::table('member')->set('time_offset', Form::get('timezone'))
+                ->update('member_id', User::get('member_id'));
+        }
+        
+        exit();
+    }
+
 	public function login() {
 		Load::view('account/login');
 

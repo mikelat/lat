@@ -8,5 +8,5 @@ $language = array(
 	,	'stats_threads' => 'Threads: %s'
 
 	,	'stats_by' => 'by %s'
-	,	'created_by' => 'Created by %s'
+	,	'created_by' => 'Posted %s by %s'
 );

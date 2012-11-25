@@ -21,7 +21,7 @@
 <?php echo $content; ?>
 
 </section>
-<script>var lat = <?php echo json_encode($jsv) ?></script>
+<script>var lat_static = <?php echo json_encode($jss) ?>; var lat = <?php echo json_encode($jsv) ?>;</script>
 <script src="<?php echo Url::make('js/jquery.js', true) ?>"></script>
 <script src="<?php echo Url::make('js/init.js', true) ?>"></script>
 <?php if(Config::get('recaptcha_public')) { ?><script src="http://www.google.com/recaptcha/api/js/recaptcha_ajax.js"></script><?php } ?>

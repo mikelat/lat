@@ -8,7 +8,7 @@
 <strong class="pl">Memory Usage:</strong> <?php echo number_format($memory / 1024); ?> kb
 <strong class="pl"><a href="<?php echo Url::make('forum/cache') ?>">force cache reload</a></strong>
 <strong class="pl"><a href="<?php echo Url::make('forum/delay') ?>">delayed page</a></strong>
-<strong class="pl"><a href="#" onclick="var	lr = 0; setInterval(function(){ lr = (lr + 1) % 360; $('html').css({ WebkitTransform: 'rotate(' + lr + 'deg)', '-moz-transform': 'rotate(' + lr + 'deg)'});	}, 1); return false;">spin the page</a></strong>
+<strong class="pl"><a href="#" onclick="var lr=0;setInterval(function(){lr=(lr+1)%360;$('html').css({WebkitTransform:'rotate('+lr+'deg)','-moz-transform':'rotate('+lr+'deg)'});},1);return false;">spin the page</a></strong>
 </div>
 <div id="debug">
 	<a href="#" onclick="$('#debug_data').toggle(); return false;">debug</a>

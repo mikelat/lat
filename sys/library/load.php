@@ -166,8 +166,5 @@ class Load {
 	public static function init() {
 		self::$js_var = array();
 		self::$js_file = array();
-
-		// Add default JS url var
-		Load::javascript_var('url', Config::get('url'));
 	}
 }

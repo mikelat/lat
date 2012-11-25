@@ -1,6 +1,6 @@
 <?php namespace Controller;
 
-use Log, Load, User, DB, Output;
+use Log, Load, User, DB, Output, Config;
 
 class Controller {
 
@@ -72,6 +72,32 @@ class Controller {
 				$this->_global_classes[] = 'logged-out';
 			}
 
+			$jss = array(
+					'url' => Config::get('url')
+				,	'date_short' => Config::get('date_short')
+				,	'date_long' => Config::get('date_long')
+				,	'date_24' => Config::get('date_24')
+				,	'date_timezone' => Config::get('date_24')
+				,	'time_offset' => User::get('session_time_offset')
+				,	'am' => Load::word('_global', 'am')
+				,	'pm' => Load::word('_global', 'pm')
+                ,   'today' => Load::word('_global', 'today')
+                ,   'tommorow' => Load::word('_global', 'tommorow')
+                ,   'yesterday' => Load::word('_global', 'yesterday')
+			);
+
+			for ($i = 1; $i <= 12; $i++) {
+				$jss['month_' . $i] = Load::word('_global', 'month_' . $i);
+			}
+
+			for ($i = 1; $i <= 7; $i++) {
+				$jss['day_' . $i] = Load::word('_global', 'day_' . $i);
+			}
+
+			for ($i = 0; $i <= 9; $i++) {
+				$jss['suffix_' . $i] = Load::word('_global', 'suffix_' . $i);
+			}
+
 			$classes = implode(" ", $this->_global_classes);
 
 			$output = array(
@@ -79,6 +105,7 @@ class Controller {
 					,	'classes' => $classes
 					,	'jsf' => Load::javascript_file()
 					,	'jsv' => Load::javascript_var()
+					,	'jss' => $jss
 			);
 
 			if(is_array($extra)) {

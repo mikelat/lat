@@ -72,21 +72,67 @@ class String {
 			$time = $now;
 		}
 
-		if(gmdate("dmy", $now) == gmdate("dmy", $time)) {
-			$date = Load::word('_global', 'date_today', date('g:ia', $time));
-		}
-		// Yesterday!
-		elseif(gmdate("dmy", $now - 86400) == gmdate("dmy",$time)) {
-			$date = Load::word('_global', 'date_yesterday', date('g:ia', $time));
-		}
-		// Tommorow!
-		elseif(gmdate("dmy", $now + 86400) == gmdate("dmy",$time)) {
-			$date = Load::word('_global', 'date_tommorow', date('g:ia', $time));
+		$server_offset = User::get('session_time_offset') * 60;
+		$gmt_time = gmdate("Y-m-d H:i", $time);
+
+		$time += $server_offset;
+		$now += $server_offset;
+
+		// Time format
+		if(Config::get('date_24')) {
+			$parsed_time = gmdate('G:i', $time);
 		}
 		else {
-			$date = date('Y-m-d g:ia', $time);
+			$parsed_time = gmdate('g:i', $time) . Load::word('_global', gmdate('a', $time));
 		}
 
-		return '<time datetime="' . gmdate("Y-m-d H:i", $now) . 'Z">' . $date . '</time>';
+		// Today
+		if(gmdate("dmy", $now) == gmdate("dmy", $time)) {
+			$date = Load::word('_global', 'today', $parsed_time);
+		}
+		// Yesterday
+		elseif(gmdate("dmy", $now - 86400) == gmdate("dmy",$time)) {
+			$date = Load::word('_global', 'yesterday', $parsed_time);
+		}
+		// Tommorow
+		elseif(gmdate("dmy", $now + 86400) == gmdate("dmy",$time)) {
+			$date = Load::word('_global', 'tommorow', $parsed_time);
+		}
+		// Standard Date
+		else {
+			if($long) {
+				$date_format = Config::get('date_long');
+			}
+			else {
+				$date_format = Config::get('date_short');
+			}
+			$date_format = preg_replace('/\[(s|d|dd|m|mm|yy|yyyy|day|month)\]/e', 'self::time_parse("\\1", ' . $time . ')', $date_format);
+			$date = $date_format . ' ' . $parsed_time;
+			$relative = false;
+		}
+		return '<time datetime="' . $gmt_time . 'Z" data-unix="' . $time . '"' . ($long ? ' data-long' : '') .'>' . $date . '</time>';
+	}
+
+	private static function time_parse($arg, $time) {
+		switch($arg) {
+			case 'd':
+				return gmdate('j', $time);
+			case 'dd':
+				return gmdate('d', $time);
+			case 'm':
+				return gmdate('n', $time);
+			case 'mm':
+				return gmdate('m', $time);
+			case 'yy':
+				return gmdate('y', $time);
+			case 'yyyy':
+				return gmdate('Y', $time);
+			case 'day':
+				return Load::word('_global', 'day_' . gmdate('N', $time));
+			case 'month':
+				return Load::word('_global', 'month_' . gmdate('n', $time));
+			case 's':
+				return Load::word('_global', 'suffix_' . substr(gmdate('j', $time), -1, 1));
+		}
 	}
 }

@@ -68,7 +68,7 @@ HTML;
 		$html .= '<blockquote>You can reload the page by clicking <a href="javascript:history.go();">here</a>.</blockquote></div>';
 
 		if($return === false) {
-			ob_end_clean();
+			@ob_end_clean();
 			die($html);
 		}
 		else {

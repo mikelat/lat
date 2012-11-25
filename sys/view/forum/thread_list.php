@@ -16,7 +16,7 @@
 		<li>
 			<div class="cell">
 				<div class="thread-title"><?php echo Url::make_slug('thread', $thread) ?></div>
-				<div class="started-by"><?php echo Load::word('forum', 'created_by', Url::make_slug('member', $thread, 'start')) ?></div>
+				<div class="started-by"><?php echo Load::word('forum', 'created_by', String::time_format($thread['start_time']), Url::make_slug('member', $thread, 'start')) ?></div>
 				<div class="statistics">
 					<span class="replies"><?php echo Load::word('forum', 'stats_replies', String::number_format($thread['total_replies'])) ?></span>
 					<span class="views"><?php echo Load::word('forum', 'stats_views', String::number_format($thread['total_views'])) ?></span>

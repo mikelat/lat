@@ -128,7 +128,7 @@ class User {
 					,	's.session_id' => self::session_id()
 					,	's.user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
 				)
-			)->row('s.session_data', 'm.*');
+			)->row('s.session_data', 's.time_offset as session_time_offset', 'm.*');
 		}
 
 		if($session_query !== false) {
@@ -147,6 +147,7 @@ class User {
 
 			$member_id = self::cookie('member_id');
 			$member_token = self::cookie('token');
+			self::$member_data['session_time_offset'] = date('Z') / 60;
 
 			Log::debug('Creating session, account details detected: member_id: [' . $member_id . '] member_token: [' . $member_token . ']');
 
@@ -158,7 +159,9 @@ class User {
 
 				if($member !== false && in_array($member_token, $tokens['login']) && self::lock() < 250) {
 					self::$member_data['tokens'] = serialize($tokens);
+					self::$member_data['session_time_offset'] = $member['time_offset'];
 					self::login($member);
+					self::$member_data['session_time_offset'] = self::$member_data['time_offset'];
 
 					Log::debug('Logged in member: ' . $member['member_id']);
 				}
@@ -193,6 +196,7 @@ class User {
 					,	'url_string' => implode('/', Url::get())
 					,	'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
 					,	'session_data' => serialize(self::$session_data)
+					,	'time_offset' => self::get('session_time_offset')
 			));
 		}
 		else {
@@ -252,21 +256,23 @@ class User {
 	 * @return boolean
 	 */
 	public static function login($member, $remember=false) {
-		self::$member_data = $member;
 
 		if($remember) {
 			$tokens = self::get_tokens();
 			$new_token = String::random_string(20);
 			$tokens['login'][time()] = $new_token;
-			self::$member_data['tokens'] = serialize($tokens);
+			$member['tokens'] = serialize($tokens);
 			self::cookie('member_id', self::get('member_id'));
 			self::cookie('token', $new_token);
 		}
 
 		DB::shutdown('member')->set(array(
 				'member_updated' => time()
-			,	'tokens' => self::$member_data['tokens']
+			,	'tokens' => $member['tokens']
+			,	'time_offset' => self::$member_data['session_time_offset']
 		))->update('member_id', $member['member_id']);
+
+		self::$member_data = $member;
 
 		return true;
 	}
