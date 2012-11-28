@@ -5,7 +5,7 @@ use Load;
 class C_Thread extends Controller {
 
 	public function __construct() {
-
+		Load::model('thread');
 	}
 
 	/**

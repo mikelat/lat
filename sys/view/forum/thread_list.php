@@ -1,14 +1,6 @@
 <h2><?php echo $forum['name']?></h2>
 <section>
-<?php if(!empty($forum_list)): ?>
-	<h3><?php echo Load::word('forum', 'sub-forums') ?></h3>
-	<ul class="forum-list content-list">
-<?php foreach($forum_list as $forum): ?>
-<?php Load::view('forum/forum', array('forum' => $forum)) ?>
-<?php endforeach; ?>
-	</ul>
-	<div class="cb"></div>
-<?php endif; ?>
+<?php echo $forum_list ?>
 <?php if(!empty($thread_list)): ?>
 	<h3><?php echo Load::word('forum', 'threads') ?></h3>
 	<ul class="thread-list content-list">

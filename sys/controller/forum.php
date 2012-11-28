@@ -1,17 +1,23 @@
 <?php namespace Controller;
 
-use Cache, Load, String, DB;
+use Cache, Load, String, Model\Forum, Model\Thread, DB;
 
 class C_Forum extends Controller {
 
 	public function __construct() {
+		Load::model('forum');
 	}
 
 	/**
 	 * View forum index.
 	 */
 	public function index() {
-		Load::view('forum/index', array('forum_list' => self::forum_list()));
+		Load::view('forum/forum_index', array(
+				'forum_list' => Load::view('forum/forum_list', array(
+						'forum_list' => Forum::get_parents()
+					,	'root' => 0
+			), true)
+		));
 	}
 
 	/**
@@ -20,43 +26,18 @@ class C_Forum extends Controller {
 	 * @param string $slug
 	 */
 	public function view($slug) {
+		Load::model('thread');
 		$id = String::slug_id($slug);
-
-		$threads = DB::table('thread')->where(array(
-				'forum_id' => $id
-		))->get();
+		$forum_list = Load::view('forum/forum_list', array('forum_list' => array(
+				0 => array(array('forum_id' => $id, 'name' => Load::word('forum', 'sub-forums')))
+			,	$id => Forum::get_parents($id))
+		), true);
 
 		Load::view('forum/thread_list', array(
-				'forum_list' => self::forum_list($id)
+				'forum_list' => $forum_list
 			,	'forum' => Cache::get('forum', $id)
-			,	'thread_list' => $threads
+			,	'thread_list' => Thread::get($id)
 		));
-	}
-
-	/**
-	 * Generate a forum list
-	 *
-	 * @param number $id
-	 * @return string
-	 */
-	private function forum_list($id=0) {
-		$forums = Cache::get('forum');
-
-		if(!empty($forums)) {
-			$forums_parent = array();
-
-			foreach($forums as $f) {
-				$forums_parent[$f['parent']][] = $f;
-			}
-
-			if($id > 0) {
-				$forums_parent = isset($forums_parent[$id]) ? $forums_parent[$id] : '';
-			}
-
-			return $forums_parent;
-		}
-
-		return null;
 	}
 
 	/**

@@ -1,3 +1,7 @@
+<?php foreach ($forum_list[0] as $root_forum): ?>
+	<h3><?php echo isset($root_forum['slug']) ? Url::make_slug('forum', $root_forum) : $root_forum['name'] ?></h3>
+	<ul class="forum-list content-list">
+<?php foreach($forum_list[$root_forum['forum_id']] as $forum): ?>
 		<li>
 			<div class="cell">
 				<h4><?php echo Url::make_slug('forum', $forum) ?></h4>
@@ -16,3 +20,7 @@
 				<div class="cb"></div>
 			</div>
 		</li>
+<?php endforeach; ?>
+	</ul>
+	<div class="cb"></div>
+<?php endforeach; ?>
