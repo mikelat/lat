@@ -1,6 +1,6 @@
 <?php namespace Controller;
-
-use Cache, Load, String, Model\Forum, Model\Thread, DB;
+use Cache, Load, String, Model\Forum, Model\Thread;
+use DB; // temporary for development
 
 class C_Forum extends Controller {
 
@@ -9,15 +9,14 @@ class C_Forum extends Controller {
 	}
 
 	/**
-	 * View forum index.
+	 * View forum index
 	 */
 	public function index() {
-		Load::view('forum/forum_index', array(
-				'forum_list' => Load::view('forum/forum_list', array(
-						'forum_list' => Forum::get_parents()
-					,	'root' => 0
-			), true)
-		));
+		$forum_list = Load::view('forum/forum_list', array(
+				'forum_list' => Forum::get_parents()
+		), true);
+
+		Load::view('forum/forum_index', array('forum_list' => $forum_list));
 	}
 
 	/**
@@ -28,8 +27,10 @@ class C_Forum extends Controller {
 	public function view($slug) {
 		Load::model('thread');
 		$id = String::slug_id($slug);
+
+		// Generate sub-forum list
 		$forum_list = Load::view('forum/forum_list', array('forum_list' => array(
-				0 => array(array('forum_id' => $id, 'name' => Load::word('forum', 'sub-forums')))
+				0 => array(array('forum_id' => $id, 'name' => Load::word('forum', 'sub_forums')))
 			,	$id => Forum::get_parents($id))
 		), true);
 

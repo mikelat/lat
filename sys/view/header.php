@@ -26,7 +26,7 @@
 					<a href="<?php echo Url::make('account/login') ?>" class="btn c1"><?php echo Load::word('_global', 'login') ?></a>
 					<a href="<?php echo Url::make('account/signup') ?>" class="btn c1"><?php echo Load::word('_global', 'signup') ?></a>
 <?php else: ?>
-					<a href="<?php echo Url::make('account') ?>" id="account-button" class="btn c1"><?php echo User::get('display_name') ?></a>
+					<a href="<?php echo Url::make('account') ?>" id="account-button" class="btn c1"><?php echo User::get('name') ?></a>
 <?php endif; ?>
 				</li>
 			</ul>

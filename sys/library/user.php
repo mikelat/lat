@@ -1,9 +1,6 @@
 <?php
 class User {
 	private static $create_session = false;
-	private static $session_data_raw = '';
-	private static $session_data;
-	private static $session_data_changed = false;
 	private static $member_data = array();
 	private static $ip_address = "";
 	private static $session_id = "";
@@ -13,32 +10,6 @@ class User {
 	/* If you change either of these, current passwords will no longer work! */
 	const hash_cycles = 500; // how many cycles to has the password
 	const hash_algorithm = 'sha512'; // hashing algorithm
-
-	/**
-	 * Sets or returns session data
-	 *
-	 * @param string $name
-	 * @param string $value
-	 * @return string
-	 */
-	public static function session($name = null, $value = null) {
-		if(!is_array(self::$session_data)) {
-			self::$session_data = @unserialize(self::$session_data_raw);
-		}
-
-		if($name === null && $value === null) {
-			return self::$session_data;
-		}
-		elseif($name !== null && $value === null) {
-			return isset(self::$session_data[$name]) ? self::$session_data[$name] : null;
-		}
-		elseif($name !== null && $value !== null) {
-			self::$session_data_changed = true;
-			self::$session_data[$name] = $value;
-		}
-
-		return null;
-	}
 
 	/**
 	 * Returns member data from currently logged in member
@@ -100,76 +71,72 @@ class User {
 		self::$ip_address = preg_replace("/[^0-9A-F:.]/", "", strtoupper($_SERVER['REMOTE_ADDR']));
 		self::$session_id = self::cookie("session_id");
 		$session_query = false;
+		$spider = false;
 
 		// Checking for robots
-		if(!self::session_id() && Config::get('bots_enabled'))
-		{
+		if(!self::session_id() && Config::get('bots_enabled')) {
 			$bot_list = explode("\n", Config::get('bots_list'));
 
 			// Compare known bots with our current user agent
-			foreach($bot_list as $bot)
-			{
-				$bot_info = explode("|", $bot);
+			foreach($bot_list as $bot) {
+				$bot_info = explode(",", $bot);
 
-				if(preg_match("/{$bot_info[0]}/i", $_SERVER['HTTP_USER_AGENT']) && $bot_info != "")
-				{
-					self::session('spider', $bot);
-					self::$session_id = 'B ' . substr($bot_info[1], 0, 23);
+				// beep boop beep
+				if(preg_match("/{$bot_info[0]}/i", $_SERVER['HTTP_USER_AGENT'])) {
+					self::$session_id = 'B ' . substr($bot_info[0], 0, 23);
+					$spider = true;
 				}
 			}
 		}
 
 		// Attempt to load the current session
-		if(self::session_id() != "")
-		{
+		if(self::session_id() != "") {
 			$session_query = DB::table('session s')->left_join('member m', 's.member_id=m.member_id')
 				->where(array(
 						's.ip_address' => self::ip_address()
 					,	's.session_id' => self::session_id()
 					,	's.user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
 				)
-			)->row('s.session_data', 's.time_offset as session_time_offset', 'm.*');
+			)->row('s.time_offset as session_time_offset', 'm.*');
 		}
 
 		if($session_query !== false) {
-			self::$session_data_raw = $session_query['session_data'];
-			unset($session_query['session_data']);
 			self::$member_data = $session_query;
 		}
 		else {
 			// Delete hour old sessions
 			DB::shutdown('session')->delete('session_updated <', time() - 3600);
+			self::$member_data['session_time_offset'] = date('Z') / 60;
 
 			// Generate session ID
-			if(self::session('spider') === null) {
+			if(!$spider) {
 				self::$session_id = String::random_string(25);
 			}
 
-			$member_id = self::cookie('member_id');
-			$member_token = self::cookie('token');
-			self::$member_data['session_time_offset'] = date('Z') / 60;
-
-			Log::debug('Creating session, account details detected: member_id: [' . $member_id . '] member_token: [' . $member_token . ']');
-
-			if($member_id && $member_token) {
-				$member = DB::table('member')->where('member_id', $member_id)->row();
+			// Can we automatically login a user from cookies?
+			if(self::cookie('member_id') && self::cookie('token')) {
+				$member = DB::table('member')->where('member_id', self::cookie('member_id'))->row();
 				$tokens = self::get_tokens('login', @unserialize($member['tokens']));
 
-				Log::debug($member . ' ' . (in_array($member_token, $tokens['login']) ? 'yes' : 'no') . ' ' . self::lock());
+				// We have a match!
+				if($member !== false && in_array(self::cookie('token'), $tokens['login']) && self::lock() < 250) {
+					// reset tokens
+					$member['tokens'] = serialize($tokens);
 
-				if($member !== false && in_array($member_token, $tokens['login']) && self::lock() < 250) {
-					self::$member_data['tokens'] = serialize($tokens);
-					self::$member_data['session_time_offset'] = $member['time_offset'];
+					// process login on the user
 					self::login($member);
+
+					// override server time with the one we stored with the user
 					self::$member_data['session_time_offset'] = self::$member_data['time_offset'];
 
-					Log::debug('Logged in member: ' . $member['member_id']);
+					Log::debug('Logged in member id: ' . $member['member_id']);
 				}
+				// No match, assume it's an abuse attempt and clear everything
 				else {
 					self::lock(20);
 					self::logout();
 
-					Log::debug('Failed login on member: ' . $member['member_id']);
+					Log::debug('Failed login on member id: ' . self::cookie('member_id'));
 				}
 			}
 
@@ -195,7 +162,6 @@ class User {
 					,	'session_created' => time()
 					,	'url_string' => implode('/', Url::get())
 					,	'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
-					,	'session_data' => serialize(self::$session_data)
 					,	'time_offset' => self::get('session_time_offset')
 			));
 		}
@@ -204,7 +170,7 @@ class User {
 						'session_updated' => time()
 					,	'url_string' => implode('/', Url::get())
 					,	'member_id' => self::get('member_id')
-				), (self::$session_data_changed ? array('session_data' => serialize(self::$session_data)) : array())
+				)
 			)->update(array(
 						'ip_address' => self::ip_address()
 					,	'session_id' => self::session_id()
@@ -256,7 +222,7 @@ class User {
 	 * @return boolean
 	 */
 	public static function login($member, $remember=false) {
-
+		// Store login information in a new token
 		if($remember) {
 			$tokens = self::get_tokens();
 			$new_token = String::random_string(20);
@@ -266,14 +232,13 @@ class User {
 			self::cookie('token', $new_token);
 		}
 
+		// Update tokens and last time we logged in
 		DB::shutdown('member')->set(array(
 				'member_updated' => time()
 			,	'tokens' => $member['tokens']
-			,	'time_offset' => self::$member_data['session_time_offset']
 		))->update('member_id', $member['member_id']);
 
 		self::$member_data = $member;
-
 		return true;
 	}
 
@@ -281,12 +246,14 @@ class User {
 	 * Logout a user, clear cookies
 	 */
 	public static function logout() {
+		// Clear logged in data
 		self::$member_data = array();
 
 		// Remove our current token
 		$tokens = self::get_tokens();
 		unset($tokens['login'][array_search(self::cookie('token'), $tokens)]);
 
+		// Clear cookies
 		self::cookie('member_id', '');
 		self::cookie('token', '');
 	}
@@ -299,8 +266,9 @@ class User {
 	 */
 	public static function lock($value=null)
 	{
+		// Haven't checked the current locked level yet
 		if(!isset(self::$lock[self::ip_address()])) {
-			$lock = DB::table('member_lock')->where(array(
+			$lock = DB::table('session_lock')->where(array(
 					'ip_address' => self::ip_address()
 				,	'lock_updated >' => time() - 900
 			))->row('score', 'lock_updated');
@@ -309,9 +277,10 @@ class User {
 			self::$lock_updated[self::ip_address()] = intval($lock['lock_updated']);
 		}
 
+		// Adding something to the locked level
 		if($value !== null) {
 			// Delete lock records past the last hour
-			DB::shutdown('member_lock')->delete('lock_updated <', time() - 3600);
+			DB::shutdown('session_lock')->delete('lock_updated <', time() - 3600);
 
 			self::$lock[self::ip_address()] = self::$lock[self::ip_address()] + $value;
 
@@ -319,7 +288,7 @@ class User {
 				self::$lock[self::ip_address()] = 255;
 			}
 
-			DB::shutdown('member_lock')->replace(array(
+			DB::shutdown('session_lock')->replace(array(
 					'ip_address' => self::ip_address()
 				,	'lock_updated' => time()
 				,	'score' => self::$lock[self::ip_address()]
@@ -360,11 +329,11 @@ class User {
 		for ($i = 0; $i < self::hash_cycles; $i++) {
 			$hash = openssl_digest($hash . $password . $salt, self::hash_algorithm);
 		}
-
 		return $hash;
 	}
 
 	/**
+	 * Cleans old tokens from serialized member tokens
 	 *
 	 * @param array $tokens
 	 * @param string $type

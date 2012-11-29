@@ -4,8 +4,8 @@
 
 		<ul>
 			<?php echo Form::input(array(
-						'label' => Load::word('account', 'display_name')
-					,	'name' => 'display_name'
+						'label' => Load::word('account', 'name')
+					,	'name' => 'name'
 					,	'validate' => array('maxlength:15', 'minlength:2', 'ajax')
 				)); ?>
 

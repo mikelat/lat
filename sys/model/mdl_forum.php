@@ -4,7 +4,6 @@ Use Cache;
 
 class Forum extends Model {
 
-
 	/**
 	 * Generate a forum list
 	 *

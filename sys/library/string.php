@@ -56,6 +56,26 @@ class String {
 	}
 
 	/**
+	 * Creates a slug for a url
+	 *
+	 * @param string $string
+	 * @return mixed
+	 */
+	public static function make_slug($string='') {
+		return str_replace(' ', '-', preg_replace('/[^0-9A-Za-z \.]/', '_', utf8_decode($string)));
+	}
+
+	/**
+	 * Find string length from UTF8 strings
+	 *
+	 * @param string $str
+	 * @return number
+	 */
+	public static function length($str='') {
+		return strlen(utf8_decode($str));
+	}
+
+	/**
 	 * Outputs a formatted date string with time tags
 	 *
 	 * @param number $time
@@ -100,39 +120,31 @@ class String {
 		}
 		// Standard Date
 		else {
-			if($long) {
-				$date_format = Config::get('date_long');
-			}
-			else {
-				$date_format = Config::get('date_short');
-			}
-			$date_format = preg_replace('/\[(s|d|dd|m|mm|yy|yyyy|day|month)\]/e', 'self::time_parse("\\1", ' . $time . ')', $date_format);
-			$date = $date_format . ' ' . $parsed_time;
-			$relative = false;
+			// Converts time date placeholders
+			$date = preg_replace_callback('/\[(s|d|dd|m|mm|yy|yyyy|day|month)\]/',
+			function ($match) use ($time) {
+				switch($match[1]) {
+					case 'd':
+						return gmdate('j', $time);
+					case 'dd':
+						return gmdate('d', $time);
+					case 'm':
+						return gmdate('n', $time);
+					case 'mm':
+						return gmdate('m', $time);
+					case 'yy':
+						return gmdate('y', $time);
+					case 'yyyy':
+						return gmdate('Y', $time);
+					case 'day':
+						return Load::word('_global', 'day_' . gmdate('N', $time));
+					case 'month':
+						return Load::word('_global', 'month_' . gmdate('n', $time));
+					case 's':
+						return Load::word('_global', 'suffix_' . substr(gmdate('j', $time), -1, 1));
+				}
+			}, $long ? Config::get('date_long') : Config::get('date_short')) . ' ' . $parsed_time;
 		}
 		return '<time datetime="' . $gmt_time . 'Z" data-unix="' . $time . '"' . ($long ? ' data-long' : '') .'>' . $date . '</time>';
-	}
-
-	private static function time_parse($arg, $time) {
-		switch($arg) {
-			case 'd':
-				return gmdate('j', $time);
-			case 'dd':
-				return gmdate('d', $time);
-			case 'm':
-				return gmdate('n', $time);
-			case 'mm':
-				return gmdate('m', $time);
-			case 'yy':
-				return gmdate('y', $time);
-			case 'yyyy':
-				return gmdate('Y', $time);
-			case 'day':
-				return Load::word('_global', 'day_' . gmdate('N', $time));
-			case 'month':
-				return Load::word('_global', 'month_' . gmdate('n', $time));
-			case 's':
-				return Load::word('_global', 'suffix_' . substr(gmdate('j', $time), -1, 1));
-		}
 	}
 }

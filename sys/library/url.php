@@ -104,7 +104,14 @@ class Url {
 		return Config::get('url') . $url;
 	}
 
-
+	/**
+	 * Creates a generic slug link
+	 *
+	 * @param string $type
+	 * @param array $arr
+	 * @param string $prefix
+	 * @return string
+	 */
 	public static function make_slug($type, $arr, $prefix='') {
 		if($prefix !== '') {
 			$prefix = $prefix . '_' . $type . '_';
@@ -114,11 +121,31 @@ class Url {
 			$id = $type . '_id';
 		}
 
-
-		return '<a class="url-' . $type . '-' . $arr[$id] . '" '
+		return '<a class="url-' . $type . ' url-' . $type . '-' . $arr[$id] . '" '
 			. 'href="' . Url::make($type . '/' . $arr[$id] . '-' . $arr[$prefix . 'slug'])
 			. (isset($arr[$prefix . 'description']) ? '" title="' . $arr[$prefix . 'description'] : '')
 			. '">' . $arr[$prefix . 'name'] . '</a>';
+	}
+
+	/**
+	 * Create member profile link
+	 *
+	 * @param array $arr
+	 * @param string $prefix
+	 * @return string
+	 */
+	public static function make_avatar($arr, $prefix='') {
+		if($prefix !== '') {
+			$prefix = $prefix . '_member_';
+			$id = $prefix . 'id';
+		}
+		else {
+			$id = 'member_id';
+		}
+
+		return '<a class="avatar avatar-' . $arr[$id] . '" title="' . $arr[$prefix . 'name'] . '" '
+			. 'href="' . Url::make('member/' . $arr[$id] . '-' . $arr[$prefix . 'slug']) . '">'
+			. '<img src="' . self::make('avatar.png', true) . '" alt="' . $arr[$prefix . 'name'] . '" /></a>';
 	}
 
 	/**

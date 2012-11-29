@@ -13,8 +13,9 @@ class Load {
 	 * @param string $file
 	 */
 	public static function library($file) {
+		$timer = microtime(true);
 		require_once Config::get('path_library') . strtolower($file) . EXT;
-		Log::debug("Loaded {$file} library.");
+		Log::debug("Loaded {$file} library.", microtime(true) - $timer);
 	}
 
 	/**
@@ -23,8 +24,9 @@ class Load {
 	 * @param string $file
 	 */
 	public static function model($file) {
+		$timer = microtime(true);
 		require_once Config::get('path_model') . 'mdl_' . strtolower($file) . EXT;
-		Log::debug("Loaded {$file} model.");
+		Log::debug("Loaded {$file} model.", microtime(true) - $timer);
 	}
 
 	/**

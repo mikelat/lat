@@ -1,6 +1,5 @@
 <?php namespace Controller;
-
-use Load, Form, Url, DB, User, Model\Member;
+use Load, Form, Url, DB, User, String, Model\Member;
 
 class C_Account extends Controller {
 
@@ -9,6 +8,9 @@ class C_Account extends Controller {
 		Load::library('form');
 	}
 
+	/**
+	 * Account profile
+	 */
 	public function index() {
 		if(!User::get('member_id')) {
 			Url::load('/account/login');
@@ -17,6 +19,9 @@ class C_Account extends Controller {
 		Load::view('account/account');
 	}
 
+	/**
+	 * Set timezone
+	 */
     public function timezone() {
         DB::table('session')->set('time_offset', Form::get('timezone'))->update(array(
                     'ip_address' => User::ip_address()
@@ -24,21 +29,25 @@ class C_Account extends Controller {
                 ,   'user_agent' => substr($_SERVER['HTTP_USER_AGENT'], 0, 255)
             )
         );
-        
+
         if(User::get('member_id')) {
             DB::table('member')->set('time_offset', Form::get('timezone'))
                 ->update('member_id', User::get('member_id'));
         }
-        
+
         exit();
     }
 
+    /**
+     * Login page
+     */
 	public function login() {
 		Load::view('account/login');
 
 		if(Form::request_submit()) {
+			echo String::make_slug(Form::get('name'));exit();
 			$validate = Form::is_valid();
-			$member = DB::table('member')->where('display_name', Form::get('display_name'))->row();
+			$member = DB::table('member')->where('name', Form::get('name'))->row();
 
 			// 25 failed attempts = complete lockout
 			if(User::lock() >= 250 && $validate['_success']) {
@@ -47,12 +56,11 @@ class C_Account extends Controller {
 			}
 
 			if($member === false && $validate['_success']) {
-				$validate['_msg'] = Load::word('account', 'error_display_name_not_found');
+				$validate['_msg'] = Load::word('account', 'error_name_not_found');
 				$validate['_success'] = false;
 			}
 
 			if($validate['_success']) {
-
 				if(User::hash_password(Form::get('password'), $member['password_salt']) !== $member['password']) {
 					$validate['_msg'] = Load::word('account', 'error_login');
 					$validate['_success'] = false;
@@ -76,19 +84,22 @@ class C_Account extends Controller {
 		}
 	}
 
+	/**
+	 * Sign up age
+	 */
 	public function signup() {
 		// Output the Form
 		Load::view('account/signup');
 
 		if(Form::request_validate() || Form::request_submit()) {
 			$validate = Form::is_valid();
-			$display_name = trim(Form::get('display_name'));
+			$name = trim(Form::get('name'));
 
 			// Check if display name is taken
-			if($display_name) {
-				$dn_avaliable = Account::display_name_avaliable($display_name);
-				$validate['display_name']['msg'] = $dn_avaliable ? Load::word('account', 'good_name', $display_name) : Load::word('account', 'bad_name', $display_name);
-				$validate['display_name']['success'] = $dn_avaliable;
+			if($name) {
+				$dn_avaliable = Member::name_avaliable($name);
+				$validate['name']['msg'] = $dn_avaliable ? Load::word('account', 'good_name', $name) : Load::word('account', 'bad_name', $name);
+				$validate['name']['success'] = $dn_avaliable;
 				$validate['_success'] = $dn_avaliable ? $validate['_success'] : false;
 			}
 
@@ -110,7 +121,7 @@ class C_Account extends Controller {
 
 			if($validate['_success'] && Form::request_submit()) {
 				Member::create(array(
-						'display_name' => $display_name
+						'name' => $name
 					,	'password' => Form::get('password')
 					,	'ip_address' => User::ip_address()
 				));
@@ -123,6 +134,9 @@ class C_Account extends Controller {
 		}
 	}
 
+	/**
+	 * Logout
+	 */
 	public function logout() {
 		// Output the Form
 		Load::view('account/signup');

@@ -14,9 +14,7 @@
 					<?php echo Load::word('forum', 'stats_by', Url::make_slug('member', $forum, 'last')) ?>
 					<?php echo String::time_format($forum['last_thread_time']) ?>
 				</div>
-				<a class="avatar">
-					<img src="<?php echo Url::make('avatar.png', true) ?>" alt="" />
-				</a>
+				<?php echo Url::make_avatar($forum, 'last') ?>
 				<div class="cb"></div>
 			</div>
 		</li>

@@ -1,6 +1,6 @@
 <?php namespace Controller;
 
-use Load;
+use Load, String, Model\Thread;
 
 class C_Thread extends Controller {
 
@@ -14,6 +14,7 @@ class C_Thread extends Controller {
 	 * @param string $slug
 	 */
 	public function view($slug) {
-		echo 'this is where thread viewing will go!';
+		$id = String::slug_id($slug);
+		Load::view('thread/thread_index', array('replies' => Thread::replies($id)));
 	}
 }

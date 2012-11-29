@@ -264,7 +264,7 @@ class Form {
 					break;
 
 					case 'maxlength':
-						if(strlen($value) > $v) {
+						if(String::length($value) > $v) {
 							$return[$name]['msg'] = self::language_error($n, $v);
 							$return[$name]['success'] = false;
 						}

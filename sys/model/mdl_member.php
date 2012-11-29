@@ -4,8 +4,8 @@ use DB, Form, String, User, Url, Load;
 
 class Member extends Model {
 
-	private static $display_name_passed = array();
-	private static $display_name_failed = array();
+	private static $name_passed = array();
+	private static $name_failed = array();
 
 	private static $email_address_passed = array();
 	private static $email_address_failed = array();
@@ -19,7 +19,7 @@ class Member extends Model {
 	public static function create($arr) {
 		Load::library('form');
 
-		if(!isset($arr['display_name']) || !self::display_name_avaliable($arr['display_name'])) {
+		if(!isset($arr['name']) || !self::name_avaliable($arr['name'])) {
 			return false;
 		}
 
@@ -27,12 +27,13 @@ class Member extends Model {
 			return false;
 		}
 
-		$arr['display_name'] = trim($arr['display_name']);
+		$arr['name'] = trim($arr['name']);
 		$arr['password_salt'] = String::random_string(15);
 		$arr['password'] = User::hash_password($arr['password'], $arr['password_salt']);
-		$arr['user_created'] = time();
+		$arr['member_created'] = time();
+		$arr['slug'] = String::make_slug($arr['name']);
 
-		DB::table('user')->insert($arr);
+		DB::table('member')->insert($arr);
 	}
 
 	/**
@@ -41,23 +42,23 @@ class Member extends Model {
 	 * @param string $name
 	 * @return boolean
 	 */
-	public static function display_name_avaliable($name) {
+	public static function name_avaliable($name) {
 		$name = trim($name);
 
-		if(in_array($name, self::$display_name_passed)) {
+		if(in_array($name, self::$name_passed)) {
 			return true;
 		}
 
-		if(in_array($name, self::$display_name_failed)) {
+		if(in_array($name, self::$name_failed)) {
 			return false;
 		}
 
-		if(DB::table('user')->num('display_name', $name)) {
-			self::$display_name_failed[] = $name;
+		if(DB::table('member')->num('name', $name)) {
+			self::$name_failed[] = $name;
 			return false;
 		}
 		else {
-			self::$display_name_passed[] = $name;
+			self::$name_passed[] = $name;
 			return true;
 		}
 	}
@@ -77,7 +78,7 @@ class Member extends Model {
 			return false;
 		}
 
-		if(DB::table('user')->num('email_address', $email)) {
+		if(DB::table('member')->num('email_address', $email)) {
 			self::$email_address_failed[] = $email;
 			return false;
 		}

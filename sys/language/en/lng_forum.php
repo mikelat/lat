@@ -1,7 +1,8 @@
 <?php
 $language = array(
-		'sub-forums' => 'Sub-Forums'
+		'sub_forums' => 'Sub-Forums'
 	,	'threads' => 'Threads'
+	,	'forum_list' => 'Forum List'
 
 	,	'stats_replies' => 'Replies: %s'
 	,	'stats_views' => 'Views: %s'

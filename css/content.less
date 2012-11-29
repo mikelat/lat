@@ -2,7 +2,6 @@
 	width: @site-width-highres;
 	margin: 20px auto;
 
-
 	section {
 		border: 1px solid @c1-2;
 		background: @w;
@@ -34,16 +33,10 @@
 	h3 {
 		font-size: 18px;
 		.gradient(@c3-1, @c3-3);
-		padding: 5px 0 5px 10px;
+		padding: 5px 10px 5px 10px;
 		
 		&, a {
 			color: @c1-4;
-		}
-	}
-	
-	.content-list {
-		ol {
-		
 		}
 	}
 		
@@ -52,26 +45,16 @@
 		background-color: @w; //#f0f0f1
 		padding: 2px;
 		font-size: 0;
+		display: block;
 		
 		img{
-			max-height: 100px;
-			max-width: 100px;
+			max-height: 125px;
+			max-width: 125px;
 		}
 	}
 	
 	.content-list {
 		margin: 2px 0 0 2px;
-
-		.avatar {
-			position: absolute;
-			float: right;
-			top: 2px;
-			
-			img {
-				max-width: 25px;
-				max-height: 25px;
-			}
-		}
 		
 		.statistics, .last-activity {
 			top: 4px;
@@ -99,8 +82,83 @@
 		}
 	}
 	
-	.forum-list {
+	.forum-list, .thread-list {
+		.avatar {
+			position: absolute;
+			float: right;
+			top: 2px;
+			
+			img {
+				max-width: 25px;
+				max-height: 25px;
+			}
+		}
+	}
 	
+	
+	.reply-list {
+		margin: 0;
+	
+		aside {
+			position: absolute;
+			top: 0;
+			left: 0;
+			float: left;
+			width: 270px;
+			margin: 3px;
+		}
+		
+		.user-statistics {
+			float: left;
+			width: 130px;
+			padding-left: 3px;
+			font-size: 12px;
+		}
+		
+		.avatar {
+			float: left;
+			width: 125px;
+		}
+		
+		.cell {
+			margin: 2px;
+			min-height: 135px;
+			padding-left: 275px;
+		}
+	
+		h3 {
+			height: 14px;
+			.gradient(@c2-3, @c2-4);
+			padding: 2px;
+			font-size: 14px;
+
+			&, a {
+				color: @c3-1;
+			}
+		
+		
+			.url-member {
+				display: block;
+				width: 141px;
+				text-align: center;
+				font-weight: bold;
+				float: left;
+				text-overflow: ellipsis;
+				overflow: hidden;
+				white-space: nowrap;
+			}
+			
+			time {
+				float: left;
+			}
+			
+			.reply-link {
+				float: right;
+			}
+		}
+	}
+	
+	.forum-list {
 		h4 {
 			float: left;
 			margin: 2px 0 2px 10px;
@@ -112,15 +170,15 @@
 		}
 		
 		.avatar {
-			right: 215px;
+			right: 235px;
 		}
 				
 		.last-activity {
-			width: 210px;
+			width: 230px;
 		}
 		
 		.statistics {
-			right: 253px;
+			right: 273px;
 			width: 150px;
 		}
 		
@@ -350,6 +408,12 @@
 			width: @site-width-phone;
 		}
 		
+		.forum-list, .thread-list {
+			.avatar {
+				display: none;
+			}
+		}
+		
 		.forum-list {
 			h4 {
 				display: block;
@@ -364,10 +428,6 @@
 			
 			li {
 				float: none;
-			}
-			
-			.avatar {
-				display: none;
 			}
 					
 			.last-activity {
@@ -402,10 +462,6 @@
 				float: none;
 			}
 			
-			.avatar {
-				display: none;
-			}
-					
 			.last-activity {
 				time {
 					display: inline;
