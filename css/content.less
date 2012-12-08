@@ -48,8 +48,8 @@
 		display: block;
 		
 		img{
-			max-height: 125px;
-			max-width: 125px;
+			max-height: 100px;
+			max-width: 100px;
 		}
 	}
 	
@@ -75,6 +75,7 @@
 		
 		.statistics {
 			text-align: right;
+			height: 32px;
 			
 			span {
 				display: block;
@@ -98,15 +99,6 @@
 	
 	.reply-list {
 		margin: 0;
-	
-		aside {
-			position: absolute;
-			top: 0;
-			left: 0;
-			float: left;
-			width: 270px;
-			margin: 3px;
-		}
 		
 		.user-statistics {
 			float: left;
@@ -117,13 +109,16 @@
 		
 		.avatar {
 			float: left;
-			width: 125px;
+			margin: 0 2px 2px 0;
+			
+			img{
+				max-height: 50px;
+				max-width: 50px;
+			}
 		}
 		
 		.cell {
 			margin: 2px;
-			min-height: 135px;
-			padding-left: 275px;
 		}
 	
 		h3 {
@@ -338,6 +333,7 @@
 		 		width: auto;
 		 		top: auto;
 			 	text-align: left;
+			 	height: 16px;
 			 	
 			 	span {
 			 		display: inline;
@@ -347,7 +343,7 @@
 		
 		.forum-list {
 			h4 {
-				margin: 0 0 9px 5px;
+				margin: 0 0 12px 5px;
 				font-size: 18px;
 				a {
 					font-size: 18px;

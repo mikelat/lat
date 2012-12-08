@@ -1,13 +1,16 @@
 <?php
 $language = array(
 		'sub_forums' => 'Sub-Forums'
-	,	'threads' => 'Threads'
 	,	'forum_list' => 'Forum List'
+	,	'threads' => 'Threads'
+	,	'replies' => 'Replies'
+	,	'views' => 'Views'
 
-	,	'stats_replies' => 'Replies: %s'
-	,	'stats_views' => 'Views: %s'
-	,	'stats_threads' => 'Threads: %s'
+	,	'stats_replies' => 'R: %s'
+	,	'stats_views' => 'V: %s'
+	,	'stats_threads' => 'T: %s'
 
 	,	'stats_by' => 'by %s'
 	,	'created_by' => 'Posted %s by %s'
+
 );

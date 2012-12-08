@@ -82,7 +82,7 @@ class User {
 				$bot_info = explode(",", $bot);
 
 				// beep boop beep
-				if(preg_match("/{$bot_info[0]}/i", $_SERVER['HTTP_USER_AGENT'])) {
+				if(stripos($_SERVER['HTTP_USER_AGENT'], $bot_info[0]) !== false) {
 					self::$session_id = 'B ' . substr($bot_info[0], 0, 23);
 					$spider = true;
 				}

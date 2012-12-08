@@ -14,7 +14,6 @@ class Thread extends Model {
 	function replies($id) {
 		return DB::table('thread_reply r')->where('r.thread_id', $id)
 			->left_join('member m', 'r.member_id=m.member_id')
-			->left_join('member_statistics s', 's.member_id=r.member_id')
-			->get('s.*', 'r.*', 'm.name', 'm.slug', 'm.member_created', 'm.member_updated');
+			->get('r.*', 'm.name', 'm.slug', 'm.member_created', 'm.member_updated');
 	}
 }

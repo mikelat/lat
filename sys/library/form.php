@@ -134,7 +134,7 @@ class Form {
 							$class[] = 'validate-' . $val[0];
 
 							if($val[0] == 'maxlength') {
-								$attr .= ' maxlength="' . $val[1] . '"';
+								$attr .= ' maxlength="' . (substr($val[1], 0, 1) === 'u' ? substr($val[1], 1) : $val[1]) . '"';
 							}
 
 							if($val[0] == 'regex') {
@@ -264,8 +264,9 @@ class Form {
 					break;
 
 					case 'maxlength':
-						if(String::length($value) > $v) {
-							$return[$name]['msg'] = self::language_error($n, $v);
+						if((substr($v, 0, 1) === 'u' && String::length($value) > substr($v, 1))
+						 || (substr($value, 0, 1) !== 'u' && strlen($value) > $v)) {
+							$return[$name]['msg'] = self::language_error($n, (substr($v, 0, 1) === 'u' ? substr($v, 1) : $v));
 							$return[$name]['success'] = false;
 						}
 					break;

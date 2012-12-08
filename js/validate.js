@@ -97,8 +97,8 @@ function validate_field(field) {
 	}
 
 	// maximum characters
-	if(field.data('validate-maxlength') !== undefined && field.val().length > field.data('validate-maxlength')) {
-		r = { 'success': false, 'msg': language_error('maxlength', field.data('validate-maxlength')) };
+	if(field.data('validate-maxlength') !== undefined && field.val().length > parseInt(field.data('validate-maxlength').replace(/\D/g,''))) {
+		r = { 'success': false, 'msg': language_error('maxlength', field.data('validate-maxlength').replace(/\D/g,'')) };
 	}
 		
 	if(r['success'] == false) {
